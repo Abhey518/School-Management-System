@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  sms-web:
+    build: .
+    container_name: school-management-system
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    command: http-server -p 8080 -c-1
+
+networks:
+  default:
+    name: sms-network

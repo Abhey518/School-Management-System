@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Marks - SMS</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Teacher</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="attendance.html">Attendance</a>
+            <a href="marks.html" class="active">Marks</a>
+            <a href="timetable.html">Timetable</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Enter Marks</h1>
+        
+        <div class="card">
+            <h2>Select Exam Details</h2>
+            <div class="form-group">
+                <label>Class</label>
+                <select id="classSelect">
+                    <option value="">Select a class</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="subjectInput" placeholder="e.g., Mathematics">
+            </div>
+            <div class="form-group">
+                <label>Exam Name</label>
+                <input type="text" id="examInput" placeholder="e.g., Mid-Term, Final">
+            </div>
+            <button onclick="loadStudentsForMarks()" class="btn btn-primary">Load Students</button>
+        </div>
+
+        <div class="card" id="marksCard" style="display: none;">
+            <h2>Enter Marks</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Admission No</th>
+                            <th>Student Name</th>
+                            <th>Marks (out of 100)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="marksTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="submitMarks()" class="btn btn-primary" style="margin-top: 20px;">Submit Marks</button>
+        </div>
+
+        <div class="card">
+            <h2>View Marks</h2>
+            <div class="form-group">
+                <label>Select Student</label>
+                <select id="studentSelect">
+                    <option value="">Select a student</option>
+                </select>
+            </div>
+            <button onclick="viewStudentMarks()" class="btn btn-primary">View Marks</button>
+            
+            <div id="studentMarksDisplay" style="margin-top: 20px; display: none;">
+                <h3>Marks Record</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Exam</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentMarksBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="teacher.js"></script>
+    <script>
+        // Load classes and students for dropdowns
+        async function loadDropdowns() {
+            try {
+                const classes = await getClasses();
+                const classSelect = document.getElementById('classSelect');
+                
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.name;
+                    option.textContent = cls.name;
+                    classSelect.appendChild(option);
+                });
+
+                const students = await getStudents();
+                const studentSelect = document.getElementById('studentSelect');
+                
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (${student.admission_no})`;
+                    studentSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading dropdowns:', error);
+            }
+        }
+
+        // Load students for marks entry
+        async function loadStudentsForMarks() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const subject = document.getElementById('subjectInput').value;
+            const exam = document.getElementById('examInput').value;
+            
+            if (!selectedClass || !subject || !exam) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            try {
+                const students = await getStudents();
+                const classStudents = students.filter(s => s.class === selectedClass);
+                
+                if (classStudents.length === 0) {
+                    alert('No students found in this class');
+                    return;
+                }
+
+                const tbody = document.getElementById('marksTableBody');
+                tbody.innerHTML = classStudents.map(student => `
+                    <tr>
+                        <td>${student.admission_no}</td>
+                        <td>${student.name}</td>
+                        <td>
+                            <input type="number" id="marks_${student.id}" min="0" max="100" 
+                                   style="width: 100px; padding: 5px;">
+                        </td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('marksCard').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('Error loading students');
+            }
+        }
+
+        // Submit marks
+        async function submitMarks() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const subject = document.getElementById('subjectInput').value;
+            const exam = document.getElementById('examInput').value;
+            const students = await getStudents();
+            const classStudents = students.filter(s => s.class === selectedClass);
+
+            try {
+                for (const student of classStudents) {
+                    const marksInput = document.getElementById(`marks_${student.id}`);
+                    const marks = parseInt(marksInput.value);
+                    
+                    if (marks >= 0 && marks <= 100) {
+                        await addMarks({
+                            student_id: student.id,
+                            subject: subject,
+                            exam: exam,
+                            marks: marks,
+                            entered_by: 'teacher-id-placeholder' // In real app, get from auth
+                        });
+                    }
+                }
+
+                alert('Marks submitted successfully!');
+                document.getElementById('marksCard').style.display = 'none';
+                document.getElementById('classSelect').value = '';
+                document.getElementById('subjectInput').value = '';
+                document.getElementById('examInput').value = '';
+            } catch (error) {
+                console.error('Error submitting marks:', error);
+                alert('Error submitting marks');
+            }
+        }
+
+        // View student marks
+        async function viewStudentMarks() {
+            const studentId = document.getElementById('studentSelect').value;
+            
+            if (!studentId) {
+                alert('Please select a student');
+                return;
+            }
+
+            try {
+                const marks = await getMarksByStudent(studentId);
+                const tbody = document.getElementById('studentMarksBody');
+                
+                if (marks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No marks found</td></tr>';
+                } else {
+                    tbody.innerHTML = marks.map(mark => `
+                        <tr>
+                            <td>${mark.subject}</td>
+                            <td>${mark.exam}</td>
+                            <td>${mark.marks}/100</td>
+                        </tr>
+                    `).join('');
+                }
+
+                document.getElementById('studentMarksDisplay').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading marks:', error);
+                alert('Error loading marks');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDropdowns);
+    </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Subjects - SMS</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html" class="active">Subjects</a>
+            <a href="timetable.html">Timetable</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Manage Subjects</h1>
+        
+        <div class="card">
+            <h2>Filter Subjects</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="form-group">
+                    <label>Grade</label>
+                    <select id="filterGrade" onchange="filterSubjects()">
+                        <option value="">All Subjects</option>
+                        <option value="6">Grade 6</option>
+                        <option value="7">Grade 7</option>
+                        <option value="8">Grade 8</option>
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10-11</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subject Type</label>
+                    <select id="filterType" onchange="filterSubjects()">
+                        <option value="">All Types</option>
+                        <option value="Main Subject">Main Subjects</option>
+                        <option value="Basket Subject - Language">Language Basket</option>
+                        <option value="Basket Subject - Art">Art Basket</option>
+                        <option value="Basket Subject - Technology">Technology Basket</option>
+                        <option value="Basket Subject - Commerce">Commerce Basket</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button onclick="loadSubjects()" class="btn btn-primary">Refresh</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Subjects List</h2>
+            <div class="table-responsive">
+                <table id="subjectsTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Subject Name</th>
+                            <th>Type</th>
+                            <th>Applicable Grades</th>
+                            <th>Assigned Teachers</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Teacher Modal -->
+    <div id="assignTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="background: white; max-width: 500px; margin: 5rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Assign Teacher to Subject</h2>
+                <button onclick="closeModal()" class="btn">Close</button>
+            </div>
+            <div>
+                <p><strong>Subject:</strong> <span id="selectedSubjectName"></span></p>
+                <div class="form-group">
+                    <label>Select Teacher</label>
+                    <select id="teacherSelect">
+                        <option value="">Select a teacher</option>
+                    </select>
+                </div>
+                <button onclick="assignTeacher()" class="btn btn-primary">Assign Teacher</button>
+            </div>
+            <div style="margin-top: 2rem;">
+                <h3>Currently Assigned Teachers</h3>
+                <div id="assignedTeachersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        let allSubjects = [];
+        let currentSubjectId = null;
+        let teachersData = [];
+
+        // Load subjects list
+        async function loadSubjects() {
+            try {
+                allSubjects = await getSubjects();
+                displaySubjects(allSubjects);
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                alert('Error loading subjects');
+            }
+        }
+
+        // Display subjects in table
+        function displaySubjects(subjects) {
+            const tbody = document.getElementById('subjectsTableBody');
+            
+            if (subjects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No subjects found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = subjects.map(subject => {
+                const grades = Array.isArray(subject.applicable_grades) 
+                    ? subject.applicable_grades.join(', ') 
+                    : 'N/A';
+                const teachers = subject.teacher_names || 'None assigned';
+                
+                return `
+                    <tr>
+                        <td>${subject.subject_code}</td>
+                        <td>${subject.subject_name}</td>
+                        <td>${subject.subject_type}</td>
+                        <td>${grades}</td>
+                        <td>${teachers}</td>
+                        <td>
+                            <button onclick="openAssignTeacherModal('${subject.id}', '${subject.subject_name}')" class="btn btn-small">Manage Teachers</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter subjects
+        function filterSubjects() {
+            const grade = document.getElementById('filterGrade').value;
+            const type = document.getElementById('filterType').value;
+            
+            let filtered = allSubjects;
+            
+            if (grade) {
+                const gradeNum = parseInt(grade);
+                filtered = filtered.filter(s => 
+                    Array.isArray(s.applicable_grades) && s.applicable_grades.includes(gradeNum)
+                );
+            }
+            
+            if (type) {
+                filtered = filtered.filter(s => s.subject_type === type);
+            }
+            
+            displaySubjects(filtered);
+        }
+
+        // Load teachers
+        async function loadTeachers() {
+            try {
+                teachersData = await getTeachers();
+            } catch (error) {
+                console.error('Error loading teachers:', error);
+            }
+        }
+
+        // Open assign teacher modal
+        async function openAssignTeacherModal(subjectId, subjectName) {
+            currentSubjectId = subjectId;
+            document.getElementById('selectedSubjectName').textContent = subjectName;
+            
+            // Populate teacher dropdown
+            const select = document.getElementById('teacherSelect');
+            select.innerHTML = '<option value="">Select a teacher</option>' + 
+                teachersData.map(t => 
+                    `<option value="${t.id}">${t.name_with_initials} (${t.teacher_grade})</option>`
+                ).join('');
+            
+            // Load currently assigned teachers
+            await loadAssignedTeachers(subjectId);
+            
+            document.getElementById('assignTeacherModal').style.display = 'block';
+        }
+
+        // Load assigned teachers for subject
+        async function loadAssignedTeachers(subjectId) {
+            try {
+                const subject = allSubjects.find(s => s.id === subjectId);
+                const assignedList = document.getElementById('assignedTeachersList');
+                
+                if (!subject.teacher_names || subject.teacher_names === 'None assigned') {
+                    assignedList.innerHTML = '<p>No teachers assigned yet.</p>';
+                    return;
+                }
+                
+                // Get full teacher details
+                const client = getSupabaseClient();
+                const { data, error } = await client
+                    .from('subject_teachers')
+                    .select('teacher_id, teachers(id, name_with_initials, teacher_grade)')
+                    .eq('subject_id', subjectId);
+                
+                if (error) throw error;
+                
+                if (data.length === 0) {
+                    assignedList.innerHTML = '<p>No teachers assigned yet.</p>';
+                    return;
+                }
+                
+                assignedList.innerHTML = data.map(st => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 0.5rem;">
+                        <span>${st.teachers.name_with_initials} (${st.teachers.teacher_grade})</span>
+                        <button onclick="removeTeacher('${st.teacher_id}')" class="btn btn-small btn-danger">Remove</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading assigned teachers:', error);
+            }
+        }
+
+        // Assign teacher to subject
+        async function assignTeacher() {
+            const teacherId = document.getElementById('teacherSelect').value;
+            
+            if (!teacherId) {
+                alert('Please select a teacher');
+                return;
+            }
+            
+            try {
+                await assignTeacherToSubject(teacherId, currentSubjectId);
+                alert('Teacher assigned successfully!');
+                await loadSubjects();
+                await loadAssignedTeachers(currentSubjectId);
+                document.getElementById('teacherSelect').value = '';
+            } catch (error) {
+                console.error('Error assigning teacher:', error);
+                alert('Error assigning teacher: ' + error.message);
+            }
+        }
+
+        // Remove teacher from subject
+        async function removeTeacher(teacherId) {
+            if (!confirm('Are you sure you want to remove this teacher from the subject?')) {
+                return;
+            }
+            
+            try {
+                await removeTeacherFromSubject(teacherId, currentSubjectId);
+                alert('Teacher removed successfully!');
+                await loadSubjects();
+                await loadAssignedTeachers(currentSubjectId);
+            } catch (error) {
+                console.error('Error removing teacher:', error);
+                alert('Error removing teacher: ' + error.message);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('assignTeacherModal').style.display = 'none';
+            currentSubjectId = null;
+        }
+
+        // Close modal on outside click
+        document.getElementById('assignTeacherModal').addEventListener('click', (e) => {
+            if (e.target.id === 'assignTeacherModal') closeModal();
+        });
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadTeachers();
+            await loadSubjects();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Management System - Login</title>
+    <link rel="stylesheet" href="shared/styles.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .login-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .portal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .portal-btn {
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .admin-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        .admin-btn:hover {
+            background-color: #0b7dda;
+        }
+        .teacher-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .teacher-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>School Management System</h1>
+        <div class="portal-buttons">
+            <a href="admin/dashboard.html" class="portal-btn admin-btn">Administrator Portal</a>
+            <a href="teacher/dashboard.html" class="portal-btn teacher-btn">Teacher Portal</a>
+        </div>
+    </div>
+</body>
+</html>

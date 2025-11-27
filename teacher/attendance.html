@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - SMS</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Teacher</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="attendance.html" class="active">Attendance</a>
+            <a href="marks.html">Marks</a>
+            <a href="timetable.html">Timetable</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Mark Attendance</h1>
+        
+        <div class="card">
+            <h2>Select Class and Date</h2>
+            <div class="form-group">
+                <label>Class</label>
+                <select id="classSelect">
+                    <option value="">Select a class</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="attendanceDate" value="">
+            </div>
+            <button onclick="loadStudentsForAttendance()" class="btn btn-primary">Load Students</button>
+        </div>
+
+        <div class="card" id="attendanceCard" style="display: none;">
+            <h2>Mark Attendance</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Admission No</th>
+                            <th>Student Name</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="submitAttendance()" class="btn btn-primary" style="margin-top: 20px;">Submit Attendance</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="teacher.js"></script>
+    <script>
+        // Set today's date as default
+        document.getElementById('attendanceDate').valueAsDate = new Date();
+
+        // Load classes for dropdown
+        async function loadClassesDropdown() {
+            try {
+                const classes = await getClasses();
+                const select = document.getElementById('classSelect');
+                
+                classes.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.name;
+                    option.textContent = cls.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        // Load students for attendance
+        async function loadStudentsForAttendance() {
+            const selectedClass = document.getElementById('classSelect').value;
+            const selectedDate = document.getElementById('attendanceDate').value;
+            
+            if (!selectedClass || !selectedDate) {
+                alert('Please select both class and date');
+                return;
+            }
+
+            try {
+                const students = await getStudents();
+                const classStudents = students.filter(s => s.class === selectedClass);
+                
+                if (classStudents.length === 0) {
+                    alert('No students found in this class');
+                    return;
+                }
+
+                const tbody = document.getElementById('attendanceTableBody');
+                tbody.innerHTML = classStudents.map(student => `
+                    <tr>
+                        <td>${student.admission_no}</td>
+                        <td>${student.name}</td>
+                        <td>
+                            <label>
+                                <input type="radio" name="attendance_${student.id}" value="present" checked>
+                                Present
+                            </label>
+                            <label style="margin-left: 15px;">
+                                <input type="radio" name="attendance_${student.id}" value="absent">
+                                Absent
+                            </label>
+                        </td>
+                    </tr>
+                `).join('');
+
+                document.getElementById('attendanceCard').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('Error loading students');
+            }
+        }
+
+        // Submit attendance
+        async function submitAttendance() {
+            const selectedDate = document.getElementById('attendanceDate').value;
+            const students = await getStudents();
+            const selectedClass = document.getElementById('classSelect').value;
+            const classStudents = students.filter(s => s.class === selectedClass);
+
+            try {
+                for (const student of classStudents) {
+                    const status = document.querySelector(`input[name="attendance_${student.id}"]:checked`).value;
+                    const isPresent = status === 'present';
+                    
+                    await markAttendance({
+                        student_id: student.id,
+                        date: selectedDate,
+                        status: isPresent,
+                        marked_by: 'teacher-id-placeholder' // In real app, get from auth
+                    });
+                }
+
+                alert('Attendance marked successfully!');
+                document.getElementById('attendanceCard').style.display = 'none';
+                document.getElementById('classSelect').value = '';
+            } catch (error) {
+                console.error('Error submitting attendance:', error);
+                alert('Error submitting attendance');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadClassesDropdown);
+    </script>
+</body>
+</html>

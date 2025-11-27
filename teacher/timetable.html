@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Timetable - SMS</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="teacher.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Teacher</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="attendance.html">Attendance</a>
+            <a href="marks.html">Marks</a>
+            <a href="timetable.html" class="active">Timetable</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>My Timetable</h1>
+        
+        <div class="card">
+            <h2>Weekly Schedule</h2>
+            <div class="table-responsive">
+                <table class="timetable-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8:00 - 9:00</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 9-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>9:00 - 10:00</td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-B
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-B
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>10:00 - 10:30</td>
+                            <td colspan="5" style="text-align: center; background: #f0f0f0;">Break</td>
+                        </tr>
+                        <tr>
+                            <td>10:30 - 11:30</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 9-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 9-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>11:30 - 12:30</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-B
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="period">
+                                    <strong>Mathematics</strong><br>
+                                    Grade 10-A
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
+                                </div>
+                            </td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 20px; color: #666;">
+                <em>Click the ✓ button to mark a period as completed.</em>
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="teacher.js"></script>
+    <script>
+        function markPeriodComplete(button) {
+            const period = button.parentElement;
+            period.classList.toggle('completed');
+            
+            if (period.classList.contains('completed')) {
+                button.textContent = '✓';
+                button.style.background = '#4CAF50';
+                alert('Period marked as completed!');
+            } else {
+                button.textContent = '✓';
+                button.style.background = '#2196F3';
+            }
+        }
+    </script>
+</body>
+</html>
