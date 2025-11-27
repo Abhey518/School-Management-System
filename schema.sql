@@ -183,24 +183,38 @@ ADD CONSTRAINT fk_vice_class_monitor FOREIGN KEY (vice_class_monitor_id) REFEREN
 -- ==================== INSERT DEFAULT SUBJECTS ====================
 
 -- Main Subjects (Grade 6-11)
+-- General Main Subjects (Grade 6-9)
 INSERT INTO subjects (subject_code, subject_name, subject_type, applicable_grades) VALUES
-('MTH', 'Mathematics', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('SCI', 'Science', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('SIN', 'First Language: Sinhala', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('TAM', 'First Language: Tamil', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('ENG', 'English as a Second Language', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('HIS', 'History', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('BUD', 'Religion: Buddhism', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('ISL', 'Religion: Islam', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('CAT', 'Religion: Roman Catholicism', 'Main Subject', ARRAY[6,7,8,9,10,11]),
-('HIN', 'Religion: Hinduism', 'Main Subject', ARRAY[6,7,8,9,10,11]);
+('MTH69', 'Mathematics', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('SCI69', 'Science', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('SIN69', 'First Language: Sinhala', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('TAM69', 'First Language: Tamil', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('ENG69', 'English as a Second Language', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('HIS69', 'History', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('BUD69', 'Religion: Buddhism', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('ISL69', 'Religion: Islam', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('CAT69', 'Religion: Roman Catholicism', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('HIN69', 'Religion: Hinduism', 'Main Subject - General (Grade 6-9)', ARRAY[6,7,8,9]);
 
--- Grade 6-9 Specific Main Subjects
+-- OL Main Subjects (Grade 10-11)
 INSERT INTO subjects (subject_code, subject_name, subject_type, applicable_grades) VALUES
-('ICT69', 'ICT', 'Main Subject', ARRAY[6,7,8,9]),
-('HPE69', 'Health and Physical Education', 'Main Subject', ARRAY[6,7,8,9]),
-('GEO69', 'Geography', 'Main Subject', ARRAY[6,7,8,9]),
-('LCC69', 'Life Competencies and Citizenship Education', 'Main Subject', ARRAY[6,7,8,9]);
+('MTH1011', 'Mathematics', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('SCI1011', 'Science', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('SIN1011', 'First Language: Sinhala', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('TAM1011', 'First Language: Tamil', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('ENG1011', 'English as a Second Language', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('HIS1011', 'History', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('BUD1011', 'Religion: Buddhism', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('ISL1011', 'Religion: Islam', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('CAT1011', 'Religion: Roman Catholicism', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]),
+('HIN1011', 'Religion: Hinduism', 'Main Subject - OL (Grade 10-11)', ARRAY[10,11]);
+
+-- General Other Subjects (Grade 6-9)
+INSERT INTO subjects (subject_code, subject_name, subject_type, applicable_grades) VALUES
+('ICT69', 'ICT', 'Other Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('HPE69', 'Health and Physical Education', 'Other Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('GEO69', 'Geography', 'Other Subject - General (Grade 6-9)', ARRAY[6,7,8,9]),
+('LCC69', 'Life Competencies and Citizenship Education', 'Other Subject - General (Grade 6-9)', ARRAY[6,7,8,9]);
 
 -- Basket Subjects for Grade 6-9
 INSERT INTO subjects (subject_code, subject_name, subject_type, applicable_grades) VALUES
@@ -254,7 +268,8 @@ SELECT
     t.name_with_initials AS class_teacher_name,
     t.id AS class_teacher_id,
     s.date_of_birth,
-    s.admission_date
+    s.admission_date,
+    s.emergency_contact_number
 FROM students s
 LEFT JOIN classes c ON s.class_id = c.id
 LEFT JOIN teachers t ON c.class_teacher_id = t.id;

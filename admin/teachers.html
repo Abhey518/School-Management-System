@@ -15,57 +15,52 @@
             <a href="students.html">Students</a>
             <a href="teachers.html" class="active">Teachers</a>
             <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
             <a href="timetable.html">Timetable</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
 
     <div class="container">
-        <h1>Manage Teachers</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Manage Teachers</h1>
+            <button onclick="openAddTeacherModal()" class="btn btn-primary">+ Add New Teacher</button>
+        </div>
         
         <div class="card">
-            <h2>Add New Teacher</h2>
-            <form id="addTeacherForm">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                    <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" id="fullName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Name with Initials *</label>
-                        <input type="text" id="nameWithInitials" required placeholder="e.g., A.B.C. Perera">
-                    </div>
-                    <div class="form-group">
-                        <label>Appointed Date *</label>
-                        <input type="date" id="appointedDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Teacher Grade *</label>
-                        <select id="teacherGrade" required>
-                            <option value="">Select Grade</option>
-                            <option value="Grade 1">Grade 1</option>
-                            <option value="Grade 2">Grade 2</option>
-                            <option value="Grade 3">Grade 3</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Contact Number</label>
-                        <input type="tel" id="contactNumber" placeholder="+94xxxxxxxxx">
-                    </div>
-                    <div class="form-group">
-                        <label>Emergency Contact</label>
-                        <input type="tel" id="emergencyContact" placeholder="+94xxxxxxxxx">
-                    </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Teachers List</h2>
+                <button onclick="clearFilters()" class="btn">Clear Filters</button>
+            </div>
+            
+            <!-- Filter Section -->
+            <div style="display: grid; grid-template-columns: 150px 200px 2fr 140px; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500;">Teacher Grade</label>
+                    <select id="filterTeacherGrade" style="width: 100%; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+                        <option value="">All Grades</option>
+                        <option value="Grade 1">Grade 1</option>
+                        <option value="Grade 2">Grade 2</option>
+                        <option value="Grade 3">Grade 3</option>
+                    </select>
                 </div>
-                <div style="margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">Add Teacher</button>
-                    <button type="reset" class="btn">Reset Form</button>
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500;">Class</label>
+                    <select id="filterClass" style="width: 100%; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+                        <option value="">All Classes</option>
+                    </select>
                 </div>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Teachers List</h2>
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500;">Subject</label>
+                    <select id="filterSubject" style="width: 100%; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+                        <option value="">All Subjects</option>
+                    </select>
+                </div>
+                <div style="align-self: flex-end;">
+                    <button onclick="applyFilters()" class="btn btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.9rem;">Apply Filters</button>
+                </div>
+            </div>
+            
             <div class="table-responsive">
                 <table id="teachersTable">
                     <thead>
@@ -88,14 +83,117 @@
         </div>
     </div>
 
+    <!-- Add Teacher Modal -->
+    <div id="addTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Add New Teacher</h2>
+                <button onclick="closeAddTeacherModal()" class="btn">Close</button>
+            </div>
+            <form id="addTeacherForm">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="modalFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Name with Initials *</label>
+                        <input type="text" id="modalNameWithInitials" required placeholder="e.g., A.B.C. Perera">
+                    </div>
+                    <div class="form-group">
+                        <label>Appointed Date *</label>
+                        <input type="date" id="modalAppointedDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teacher Grade *</label>
+                        <select id="modalTeacherGrade" required>
+                            <option value="">Select Grade</option>
+                            <option value="Grade 1">Grade 1</option>
+                            <option value="Grade 2">Grade 2</option>
+                            <option value="Grade 3">Grade 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="modalContactNumber" placeholder="+94xxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <input type="tel" id="modalEmergencyContact" placeholder="+94xxxxxxxxx">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Add Teacher</button>
+                    <button type="button" onclick="closeAddTeacherModal()" class="btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Teacher Details Modal -->
     <div id="teacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
         <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2>Teacher Details</h2>
-                <button onclick="closeModal()" class="btn">Close</button>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div style="position: relative;">
+                        <button onclick="toggleAdditionalActions()" class="btn" style="padding: 0.5rem 1rem;">Additional Actions ▼</button>
+                        <div id="additionalActionsDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
+                            <button onclick="deleteTeacherFromModal()" class="btn btn-danger" style="width: 100%; text-align: left; border-radius: 0; margin: 0;">Delete Teacher</button>
+                        </div>
+                    </div>
+                    <button onclick="closeModal()" class="btn">Close</button>
+                </div>
             </div>
             <div id="teacherDetailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Teacher Modal -->
+    <div id="editTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Edit Teacher</h2>
+                <button onclick="closeEditTeacherModal()" class="btn">Close</button>
+            </div>
+            <form id="editTeacherForm">
+                <input type="hidden" id="editTeacherId">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="editFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Name with Initials *</label>
+                        <input type="text" id="editNameWithInitials" required placeholder="e.g., A.B.C. Perera">
+                    </div>
+                    <div class="form-group">
+                        <label>Appointed Date *</label>
+                        <input type="date" id="editAppointedDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teacher Grade *</label>
+                        <select id="editTeacherGrade" required>
+                            <option value="">Select Grade</option>
+                            <option value="Grade 1">Grade 1</option>
+                            <option value="Grade 2">Grade 2</option>
+                            <option value="Grade 3">Grade 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="editContactNumber" placeholder="+94xxxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <input type="tel" id="editEmergencyContact" placeholder="+94xxxxxxxxx">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Update Teacher</button>
+                    <button type="button" onclick="closeEditTeacherModal()" class="btn">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -104,33 +202,128 @@
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
     <script>
-        // Load teachers list
+        let allTeachers = [];
+        let allClasses = [];
+        let allSubjects = [];
+
+        // Open Add Teacher Modal
+        function openAddTeacherModal() {
+            document.getElementById('addTeacherModal').style.display = 'block';
+        }
+
+        // Close Add Teacher Modal
+        function closeAddTeacherModal() {
+            document.getElementById('addTeacherModal').style.display = 'none';
+            document.getElementById('addTeacherForm').reset();
+        }
+
+        // Load filter dropdown data
+        async function loadFilterDropdowns() {
+            try {
+                // Load classes
+                allClasses = await getClasses();
+                const classSelect = document.getElementById('filterClass');
+                classSelect.innerHTML = '<option value="">All Classes</option>' + 
+                    allClasses.map(cls => 
+                        `<option value="${cls.id}">${cls.class_name}</option>`
+                    ).join('');
+
+                // Load subjects - query subjects table directly to avoid duplicates
+                const client = getSupabaseClient();
+                const { data: subjectsData, error } = await client
+                    .from('subjects')
+                    .select('id, subject_code, subject_name')
+                    .order('subject_code', { ascending: true });
+
+                if (error) throw error;
+                
+                allSubjects = subjectsData || [];
+                const subjectSelect = document.getElementById('filterSubject');
+                subjectSelect.innerHTML = '<option value="">All Subjects</option>' + 
+                    allSubjects.map(subject => 
+                        `<option value="${subject.id}">${subject.subject_name}</option>`
+                    ).join('');
+            } catch (error) {
+                console.error('Error loading filter data:', error);
+            }
+        }
+
+        // Apply filters
+        async function applyFilters() {
+            const teacherGrade = document.getElementById('filterTeacherGrade').value;
+            const classId = document.getElementById('filterClass').value;
+            const subjectId = document.getElementById('filterSubject').value;
+
+            try {
+                let filteredTeachers = allTeachers;
+
+                if (teacherGrade) {
+                    filteredTeachers = filteredTeachers.filter(t => t.teacher_grade === teacherGrade);
+                }
+
+                if (classId) {
+                    filteredTeachers = filteredTeachers.filter(t => 
+                        t.classes_class_teacher?.some(c => c.id === classId) || 
+                        t.classes_vice_class_teacher?.some(c => c.id === classId)
+                    );
+                }
+
+                if (subjectId) {
+                    filteredTeachers = filteredTeachers.filter(t => 
+                        t.subject_teachers?.some(st => st.subject_id === subjectId)
+                    );
+                }
+
+                displayTeachers(filteredTeachers);
+            } catch (error) {
+                console.error('Error applying filters:', error);
+            }
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('filterTeacherGrade').value = '';
+            document.getElementById('filterClass').value = '';
+            document.getElementById('filterSubject').value = '';
+            displayTeachers(allTeachers);
+        }
+
+        // Display teachers in table
+        function displayTeachers(teachers) {
+            const tbody = document.getElementById('teachersTableBody');
+            
+            if (teachers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No teachers found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = teachers.map(teacher => {
+                const subjects = teacher.subject_teachers?.map(st => st.subjects?.subject_name).filter(Boolean).join(', ') || 'None';
+                return `
+                    <tr>
+                        <td>${teacher.name_with_initials}</td>
+                        <td>${teacher.teacher_grade}</td>
+                        <td>${new Date(teacher.appointed_date).toLocaleDateString()}</td>
+                        <td>${teacher.contact_number || 'N/A'}</td>
+                        <td>${subjects}</td>
+                        <td>
+                            <button onclick="viewTeacherDetails('${teacher.id}')" class="btn btn-small">View Details</button>
+                            <button onclick="openEditTeacherModal('${teacher.id}')" class="btn btn-small btn-primary">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Load teachers list (sorted by most recently appointed)
         async function loadTeachers() {
             try {
                 const teachers = await getTeachers();
-                const tbody = document.getElementById('teachersTableBody');
-                
-                if (teachers.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No teachers found</td></tr>';
-                    return;
-                }
-                
-                tbody.innerHTML = teachers.map(teacher => {
-                    const subjects = teacher.subject_teachers?.map(st => st.subjects?.subject_name).filter(Boolean).join(', ') || 'None';
-                    return `
-                        <tr>
-                            <td>${teacher.name_with_initials}</td>
-                            <td>${teacher.teacher_grade}</td>
-                            <td>${new Date(teacher.appointed_date).toLocaleDateString()}</td>
-                            <td>${teacher.contact_number || 'N/A'}</td>
-                            <td>${subjects}</td>
-                            <td>
-                                <button onclick="viewTeacherDetails('${teacher.id}')" class="btn btn-small">View Details</button>
-                                <button onclick="deleteTeacher('${teacher.id}')" class="btn btn-small btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+                // Sort by appointed date (most recent first)
+                allTeachers = teachers.sort((a, b) => 
+                    new Date(b.appointed_date) - new Date(a.appointed_date)
+                );
+                displayTeachers(allTeachers);
             } catch (error) {
                 console.error('Error loading teachers:', error);
                 alert('Error loading teachers');
@@ -139,6 +332,7 @@
 
         // View teacher details
         async function viewTeacherDetails(id) {
+            currentTeacherId = id;
             try {
                 const teacher = await getTeacherById(id);
                 const subjects = teacher.subject_teachers?.map(st => st.subjects?.subject_name).filter(Boolean).join(', ') || 'None';
@@ -166,25 +360,99 @@
         // Close modal
         function closeModal() {
             document.getElementById('teacherModal').style.display = 'none';
+            document.getElementById('additionalActionsDropdown').style.display = 'none';
         }
+
+        // Toggle additional actions dropdown
+        function toggleAdditionalActions() {
+            const dropdown = document.getElementById('additionalActionsDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Delete teacher from modal
+        let currentTeacherId = null;
+        async function deleteTeacherFromModal() {
+            if (currentTeacherId && confirm('Are you sure you want to delete this teacher? This action cannot be undone.')) {
+                try {
+                    await deleteTeacherById(currentTeacherId);
+                    alert('Teacher deleted successfully!');
+                    closeModal();
+                    loadTeachers();
+                } catch (error) {
+                    console.error('Error deleting teacher:', error);
+                    alert('Error deleting teacher: ' + error.message);
+                }
+            }
+        }
+
+        // Open Edit Teacher Modal
+        async function openEditTeacherModal(id) {
+            try {
+                const teacher = await getTeacherById(id);
+                
+                document.getElementById('editTeacherId').value = teacher.id;
+                document.getElementById('editFullName').value = teacher.full_name;
+                document.getElementById('editNameWithInitials').value = teacher.name_with_initials;
+                document.getElementById('editAppointedDate').value = teacher.appointed_date;
+                document.getElementById('editTeacherGrade').value = teacher.teacher_grade;
+                document.getElementById('editContactNumber').value = teacher.contact_number || '';
+                document.getElementById('editEmergencyContact').value = teacher.emergency_contact_number || '';
+                
+                document.getElementById('editTeacherModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading teacher for edit:', error);
+                alert('Error loading teacher details');
+            }
+        }
+
+        // Close Edit Teacher Modal
+        function closeEditTeacherModal() {
+            document.getElementById('editTeacherModal').style.display = 'none';
+            document.getElementById('editTeacherForm').reset();
+        }
+
+        // Edit teacher form handler
+        document.getElementById('editTeacherForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const teacherId = document.getElementById('editTeacherId').value;
+            const teacherData = {
+                full_name: document.getElementById('editFullName').value,
+                name_with_initials: document.getElementById('editNameWithInitials').value,
+                appointed_date: document.getElementById('editAppointedDate').value,
+                teacher_grade: document.getElementById('editTeacherGrade').value,
+                contact_number: document.getElementById('editContactNumber').value || null,
+                emergency_contact_number: document.getElementById('editEmergencyContact').value || null
+            };
+            
+            try {
+                await updateTeacher(teacherId, teacherData);
+                alert('Teacher updated successfully!');
+                closeEditTeacherModal();
+                loadTeachers();
+            } catch (error) {
+                console.error('Error updating teacher:', error);
+                alert('Error updating teacher: ' + error.message);
+            }
+        });
 
         // Add teacher form handler
         document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const teacherData = {
-                full_name: document.getElementById('fullName').value,
-                name_with_initials: document.getElementById('nameWithInitials').value,
-                appointed_date: document.getElementById('appointedDate').value,
-                teacher_grade: document.getElementById('teacherGrade').value,
-                contact_number: document.getElementById('contactNumber').value || null,
-                emergency_contact_number: document.getElementById('emergencyContact').value || null
+                full_name: document.getElementById('modalFullName').value,
+                name_with_initials: document.getElementById('modalNameWithInitials').value,
+                appointed_date: document.getElementById('modalAppointedDate').value,
+                teacher_grade: document.getElementById('modalTeacherGrade').value,
+                contact_number: document.getElementById('modalContactNumber').value || null,
+                emergency_contact_number: document.getElementById('modalEmergencyContact').value || null
             };
             
             try {
                 await addTeacher(teacherData);
                 alert('Teacher added successfully!');
-                e.target.reset();
+                closeAddTeacherModal();
                 loadTeachers();
             } catch (error) {
                 console.error('Error adding teacher:', error);
@@ -192,26 +460,34 @@
             }
         });
 
-        // Delete teacher function
-        async function deleteTeacher(id) {
-            if (confirm('Are you sure you want to delete this teacher?')) {
-                try {
-                    await deleteTeacherById(id);
-                    alert('Teacher deleted successfully!');
-                    loadTeachers();
-                } catch (error) {
-                    console.error('Error deleting teacher:', error);
-                    alert('Error deleting teacher');
-                }
-            }
-        }
-
-        // Close modal on outside click
-        document.getElementById('teacherModal').addEventListener('click', (e) => {
-            if (e.target.id === 'teacherModal') closeModal();
+        // Close modals on outside click
+        document.getElementById('addTeacherModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addTeacherModal') closeAddTeacherModal();
         });
 
-        window.addEventListener('DOMContentLoaded', loadTeachers);
+        document.getElementById('editTeacherModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editTeacherModal') closeEditTeacherModal();
+        });
+
+        document.getElementById('teacherModal').addEventListener('click', (e) => {
+            if (e.target.id === 'teacherModal') {
+                closeModal();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('additionalActionsDropdown');
+            const button = e.target.closest('button');
+            if (dropdown && !button?.onclick?.toString().includes('toggleAdditionalActions')) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadFilterDropdowns();
+            await loadTeachers();
+        });
     </script>
 </body>
 </html>

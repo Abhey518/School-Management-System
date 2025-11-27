@@ -42,11 +42,13 @@
                     <label>Subject Type</label>
                     <select id="filterType" onchange="filterSubjects()">
                         <option value="">All Types</option>
-                        <option value="Main Subject">Main Subjects</option>
-                        <option value="Basket Subject - Language">Language Basket</option>
-                        <option value="Basket Subject - Art">Art Basket</option>
-                        <option value="Basket Subject - Technology">Technology Basket</option>
-                        <option value="Basket Subject - Commerce">Commerce Basket</option>
+                        <option value="General - Main Subjects">General - Main Subjects (Grade 6-9)</option>
+                        <option value="General - Other Subjects">General - Other Subjects (Grade 6-9)</option>
+                        <option value="General - Basket Subjects">General - Basket Subjects (Grade 6-9)</option>
+                        <option value="OL - Main Subjects">OL - Main Subjects (Grade 10-11)</option>
+                        <option value="OL - Basket 1">OL - Basket 1 (Languages & Social)</option>
+                        <option value="OL - Basket 2">OL - Basket 2 (Arts & Literature)</option>
+                        <option value="OL - Basket 3">OL - Basket 3 (Technology & Health)</option>
                     </select>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
@@ -136,7 +138,8 @@
                 const grades = Array.isArray(subject.applicable_grades) 
                     ? subject.applicable_grades.join(', ') 
                     : 'N/A';
-                const teachers = subject.teacher_names || 'None assigned';
+                const teachers = subject.assigned_teachers || 'None assigned';
+                const subjectId = subject.subject_id || subject.id;
                 
                 return `
                     <tr>
@@ -146,7 +149,7 @@
                         <td>${grades}</td>
                         <td>${teachers}</td>
                         <td>
-                            <button onclick="openAssignTeacherModal('${subject.id}', '${subject.subject_name}')" class="btn btn-small">Manage Teachers</button>
+                            <button onclick="openAssignTeacherModal('${subjectId}', '${subject.subject_name}')" class="btn btn-small">Manage Teachers</button>
                         </td>
                     </tr>
                 `;
@@ -168,7 +171,43 @@
             }
             
             if (type) {
-                filtered = filtered.filter(s => s.subject_type === type);
+                // Map filter selection to database subject_type values
+                if (type === 'General - Main Subjects') {
+                    // Main subjects for grades 6-9
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('Main Subject - General')
+                    );
+                } else if (type === 'General - Other Subjects') {
+                    // Other subjects for grades 6-9
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('Other Subject - General')
+                    );
+                } else if (type === 'General - Basket Subjects') {
+                    // Basket subjects for grades 6-9
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('Basket Subject - General')
+                    );
+                } else if (type === 'OL - Main Subjects') {
+                    // Main subjects for grades 10-11
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('Main Subject - OL')
+                    );
+                } else if (type === 'OL - Basket 1') {
+                    // 1st Basket for grades 10-11
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('1st Basket')
+                    );
+                } else if (type === 'OL - Basket 2') {
+                    // 2nd Basket for grades 10-11
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('2nd Basket')
+                    );
+                } else if (type === 'OL - Basket 3') {
+                    // 3rd Basket for grades 10-11
+                    filtered = filtered.filter(s => 
+                        s.subject_type && s.subject_type.includes('3rd Basket')
+                    );
+                }
             }
             
             displaySubjects(filtered);
@@ -204,10 +243,10 @@
         // Load assigned teachers for subject
         async function loadAssignedTeachers(subjectId) {
             try {
-                const subject = allSubjects.find(s => s.id === subjectId);
+                const subject = allSubjects.find(s => (s.subject_id || s.id) === subjectId);
                 const assignedList = document.getElementById('assignedTeachersList');
                 
-                if (!subject.teacher_names || subject.teacher_names === 'None assigned') {
+                if (!subject || !subject.assigned_teachers || subject.assigned_teachers === 'None assigned') {
                     assignedList.innerHTML = '<p>No teachers assigned yet.</p>';
                     return;
                 }
