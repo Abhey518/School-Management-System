@@ -376,7 +376,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Your Name** - Initial work
+- **H. H. Arunoda Abeywardhana** - Initial work
 
 ## 🙏 Acknowledgments
 
@@ -385,7 +385,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email your.email@example.com or create an issue in the repository.
+For support, email arunodaabey2001@gmail.com or create an issue in the repository.
 
 ---
 
