@@ -6,6 +6,9 @@
     <title>Manage Classes - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <style>
+        .container { max-width: 1400px; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -22,10 +25,42 @@
     </nav>
 
     <div class="container">
-        <h1>Manage Classes</h1>
-        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h1>Manage Classes</h1>
+            <button onclick="openAddClassModal()" class="btn btn-primary">+ Create New Class</button>
+        </div>
+
         <div class="card">
-            <h2>Create New Class</h2>
+            <h2>Classes List</h2>
+            <div class="table-responsive">
+                <table id="classesTable">
+                    <thead>
+                        <tr>
+                            <th>Class Name</th>
+                            <th>Class Teacher</th>
+                            <th>Vice Class Teacher</th>
+                            <th>Monitors</th>
+                            <th>Student Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classesTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Class Modal -->
+    <div id="addClassModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Create New Class</h2>
+                <button onclick="closeAddClassModal()" class="btn">Close</button>
+            </div>
             <form id="addClassForm">
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
                     <div class="form-group">
@@ -76,41 +111,90 @@
                 </div>
                 <div style="margin-top: 1rem;">
                     <button type="submit" class="btn btn-primary">Create Class</button>
-                    <button type="reset" class="btn">Reset Form</button>
+                    <button type="button" onclick="closeAddClassModal()" class="btn">Cancel</button>
                 </div>
             </form>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Classes List</h2>
-            <div class="table-responsive">
-                <table id="classesTable">
-                    <thead>
-                        <tr>
-                            <th>Class Name</th>
-                            <th>Class Teacher</th>
-                            <th>Vice Class Teacher</th>
-                            <th>Monitors</th>
-                            <th>Student Count</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="classesTableBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center;">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Edit Class Modal -->
+    <div id="editClassModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 800px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Edit Class</h2>
+                <button onclick="closeEditClassModal()" class="btn">Close</button>
             </div>
+            <form id="editClassForm">
+                <input type="hidden" id="editClassId">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Grade *</label>
+                        <select id="editGrade" required>
+                            <option value="">Select Grade</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Class Letter *</label>
+                        <select id="editClassLetter" required>
+                            <option value="">Select Class Letter</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Class Teacher *</label>
+                        <select id="editClassTeacher" required>
+                            <option value="">Select Class Teacher</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vice Class Teacher</label>
+                        <select id="editViceClassTeacher">
+                            <option value="">Select Vice Class Teacher</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Class Monitor</label>
+                        <select id="editClassMonitor">
+                            <option value="">Select Class Monitor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vice Class Monitor</label>
+                        <select id="editViceClassMonitor">
+                            <option value="">Select Vice Class Monitor</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">Update Class</button>
+                    <button type="button" onclick="closeEditClassModal()" class="btn">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Class Details Modal -->
     <div id="classModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
-        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+        <div style="background: white; max-width: 900px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2>Class Details</h2>
-                <button onclick="closeModal()" class="btn">Close</button>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div style="position: relative;">
+                        <button onclick="toggleAdditionalActions()" class="btn" style="padding: 0.5rem 1rem;">Additional Actions ▼</button>
+                        <div id="additionalActionsDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
+                            <button onclick="deleteClassFromModal()" class="btn btn-danger" style="width: 100%; text-align: left; border-radius: 0; margin: 0;">Delete Class</button>
+                        </div>
+                    </div>
+                    <button onclick="closeViewModal()" class="btn">Close</button>
+                </div>
             </div>
             <div id="classDetailsContent"></div>
         </div>
@@ -123,6 +207,7 @@
     <script>
         let teachersData = [];
         let studentsData = [];
+        let currentClassId = null;
 
         // Load teachers for dropdown
         async function loadTeachersDropdown() {
@@ -185,9 +270,9 @@
                 }
                 
                 tbody.innerHTML = classes.map(cls => {
-                    const monitors = [cls.class_monitor_name, cls.vice_class_monitor_name]
-                        .filter(Boolean)
-                        .join(', ') || 'Not assigned';
+                    const monitor = cls.class_monitor_name || 'Not assigned';
+                    const viceMonitor = cls.vice_class_monitor_name || 'Not assigned';
+                    const monitors = `${monitor}<br>${viceMonitor}`;
                     
                     return `
                         <tr>
@@ -198,7 +283,7 @@
                             <td>${cls.student_count || 0}</td>
                             <td>
                                 <button onclick="viewClassDetails('${cls.id}')" class="btn btn-small">View Details</button>
-                                <button onclick="deleteClass('${cls.id}')" class="btn btn-small btn-danger">Delete</button>
+                                <button onclick="openEditClassModal('${cls.id}')" class="btn btn-small btn-primary">Edit</button>
                             </td>
                         </tr>
                     `;
@@ -211,18 +296,28 @@
 
         // View class details
         async function viewClassDetails(id) {
+            currentClassId = id;
             try {
                 const cls = await getClassById(id);
                 const content = document.getElementById('classDetailsContent');
                 
                 content.innerHTML = `
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem;">Class Information</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                         <div><strong>Class Name:</strong> ${cls.class_name}</div>
+                        <div><strong>Student Count:</strong> ${cls.student_count || 0}</div>
                         <div><strong>Grade:</strong> ${cls.grade}</div>
                         <div><strong>Class Letter:</strong> ${cls.class_letter}</div>
-                        <div><strong>Student Count:</strong> ${cls.student_count || 0}</div>
+                    </div>
+                    
+                    <h3 style="margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem;">Teachers</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
                         <div><strong>Class Teacher:</strong> ${cls.class_teacher_name || 'Not Assigned'}</div>
                         <div><strong>Vice Class Teacher:</strong> ${cls.vice_class_teacher_name || 'Not Assigned'}</div>
+                    </div>
+                    
+                    <h3 style="margin-bottom: 1rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem;">Monitors</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
                         <div><strong>Class Monitor:</strong> ${cls.class_monitor_name || 'Not Assigned'}</div>
                         <div><strong>Vice Class Monitor:</strong> ${cls.vice_class_monitor_name || 'Not Assigned'}</div>
                     </div>
@@ -235,13 +330,111 @@
             }
         }
 
-        // Close modal
-        function closeModal() {
+        // Modal functions
+        function openAddClassModal() {
+            document.getElementById('addClassModal').style.display = 'block';
+        }
+
+        function closeAddClassModal() {
+            document.getElementById('addClassModal').style.display = 'none';
+            document.getElementById('addClassForm').reset();
+        }
+
+        function closeViewModal() {
             document.getElementById('classModal').style.display = 'none';
+            currentClassId = null;
+        }
+
+        function closeEditClassModal() {
+            document.getElementById('editClassModal').style.display = 'none';
+            document.getElementById('editClassForm').reset();
+        }
+
+        function toggleAdditionalActions() {
+            const dropdown = document.getElementById('additionalActionsDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function deleteClassFromModal() {
+            if (currentClassId && confirm('Are you sure you want to delete this class? This may affect student records.')) {
+                try {
+                    await deleteClassById(currentClassId);
+                    alert('Class deleted successfully!');
+                    closeViewModal();
+                    loadClasses();
+                } catch (error) {
+                    console.error('Error deleting class:', error);
+                    alert('Error deleting class: ' + error.message);
+                }
+            }
+        }
+
+        // Open edit class modal
+        async function openEditClassModal(id) {
+            try {
+                const cls = await getClassById(id);
+                document.getElementById('editClassId').value = cls.id;
+                document.getElementById('editGrade').value = cls.grade;
+                document.getElementById('editClassLetter').value = cls.class_letter;
+                
+                // Load teachers into edit dropdowns
+                await loadTeachersForEdit();
+                
+                document.getElementById('editClassTeacher').value = cls.class_teacher_id || '';
+                document.getElementById('editViceClassTeacher').value = cls.vice_class_teacher_id || '';
+                
+                // Load students for edit
+                await loadStudentsForEdit(cls.grade);
+                
+                document.getElementById('editClassMonitor').value = cls.class_monitor_id || '';
+                document.getElementById('editViceClassMonitor').value = cls.vice_class_monitor_id || '';
+                
+                document.getElementById('editClassModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading class for edit:', error);
+                alert('Error loading class details');
+            }
+        }
+
+        async function loadTeachersForEdit() {
+            const selects = ['editClassTeacher', 'editViceClassTeacher'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const baseHTML = selectId === 'editClassTeacher' ? 
+                    '<option value="">Select Class Teacher</option>' : 
+                    '<option value="">Select Vice Class Teacher</option>';
+                
+                select.innerHTML = baseHTML + teachersData.map(teacher => 
+                    `<option value="${teacher.id}">${teacher.name_with_initials} (${teacher.teacher_grade})</option>`
+                ).join('');
+            });
+        }
+
+        async function loadStudentsForEdit(grade) {
+            try {
+                const students = await filterStudents({ grade: parseInt(grade) });
+                const selects = ['editClassMonitor', 'editViceClassMonitor'];
+                
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    const baseHTML = selectId === 'editClassMonitor' ? 
+                        '<option value="">Select Class Monitor</option>' : 
+                        '<option value="">Select Vice Class Monitor</option>';
+                    
+                    select.innerHTML = baseHTML + students.map(student => 
+                        `<option value="${student.id}">${student.name_with_initials} (${student.class_name})</option>`
+                    ).join('');
+                });
+            } catch (error) {
+                console.error('Error loading students for edit:', error);
+            }
         }
 
         // Add event listener for grade selection to load students
         document.getElementById('grade').addEventListener('change', loadStudentsForMonitors);
+        document.getElementById('editGrade').addEventListener('change', function() {
+            loadStudentsForEdit(this.value);
+        });
 
         // Add class form handler
         document.getElementById('addClassForm').addEventListener('submit', async (e) => {
@@ -259,7 +452,7 @@
             try {
                 await addClass(classData);
                 alert('Class created successfully!');
-                e.target.reset();
+                closeAddClassModal();
                 loadClasses();
             } catch (error) {
                 console.error('Error adding class:', error);
@@ -267,23 +460,50 @@
             }
         });
 
-        // Delete class function
-        async function deleteClass(id) {
-            if (confirm('Are you sure you want to delete this class? This may affect student records.')) {
-                try {
-                    await deleteClassById(id);
-                    alert('Class deleted successfully!');
-                    loadClasses();
-                } catch (error) {
-                    console.error('Error deleting class:', error);
-                    alert('Error deleting class: ' + error.message);
-                }
+        // Edit class form handler
+        document.getElementById('editClassForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const classId = document.getElementById('editClassId').value;
+            const classData = {
+                grade: parseInt(document.getElementById('editGrade').value),
+                class_letter: document.getElementById('editClassLetter').value,
+                class_teacher_id: document.getElementById('editClassTeacher').value,
+                vice_class_teacher_id: document.getElementById('editViceClassTeacher').value || null,
+                class_monitor_id: document.getElementById('editClassMonitor').value || null,
+                vice_class_monitor_id: document.getElementById('editViceClassMonitor').value || null
+            };
+            
+            try {
+                await updateClass(classId, classData);
+                alert('Class updated successfully!');
+                closeEditClassModal();
+                loadClasses();
+            } catch (error) {
+                console.error('Error updating class:', error);
+                alert('Error updating class: ' + error.message);
             }
-        }
+        });
 
-        // Close modal on outside click
+        // Close modals on outside click
+        document.getElementById('addClassModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addClassModal') closeAddClassModal();
+        });
+        
+        document.getElementById('editClassModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editClassModal') closeEditClassModal();
+        });
+        
         document.getElementById('classModal').addEventListener('click', (e) => {
-            if (e.target.id === 'classModal') closeModal();
+            if (e.target.id === 'classModal') closeViewModal();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('additionalActionsDropdown');
+            if (dropdown && !e.target.closest('button[onclick="toggleAdditionalActions()"]') && !e.target.closest('#additionalActionsDropdown')) {
+                dropdown.style.display = 'none';
+            }
         });
 
         window.addEventListener('DOMContentLoaded', async () => {

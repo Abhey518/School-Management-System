@@ -311,11 +311,15 @@ SELECT
     c.grade,
     c.class_letter,
     c.class_name,
-    ct.name_with_initials AS class_teacher,
-    vct.name_with_initials AS vice_class_teacher,
-    cm.name_with_initials AS class_monitor,
-    vcm.name_with_initials AS vice_class_monitor,
-    COUNT(s.id) AS total_students
+    c.class_teacher_id,
+    c.vice_class_teacher_id,
+    c.class_monitor_id,
+    c.vice_class_monitor_id,
+    ct.name_with_initials AS class_teacher_name,
+    vct.name_with_initials AS vice_class_teacher_name,
+    cm.name_with_initials AS class_monitor_name,
+    vcm.name_with_initials AS vice_class_monitor_name,
+    COUNT(s.id) AS student_count
 FROM classes c
 LEFT JOIN teachers ct ON c.class_teacher_id = ct.id
 LEFT JOIN teachers vct ON c.vice_class_teacher_id = vct.id
@@ -323,6 +327,8 @@ LEFT JOIN students cm ON c.class_monitor_id = cm.id
 LEFT JOIN students vcm ON c.vice_class_monitor_id = vcm.id
 LEFT JOIN students s ON s.class_id = c.id
 GROUP BY c.id, c.grade, c.class_letter, c.class_name, 
+         c.class_teacher_id, c.vice_class_teacher_id,
+         c.class_monitor_id, c.vice_class_monitor_id,
          ct.name_with_initials, vct.name_with_initials,
          cm.name_with_initials, vcm.name_with_initials;
 

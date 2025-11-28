@@ -509,3 +509,131 @@ docker-compose logs
 ✅ Student details modal with balanced layout and spacing  
 ✅ Emergency contact displaying properly  
 ✅ Database schema updated with separated subject entries
+
+---
+
+### Session 3 - November 28, 2025
+
+#### **Completed Tasks**
+
+##### 1. Classes Management Enhancements
+
+- ✅ **Modal-based "Create New Class" form**:
+  - Converted inline form to modal popup with "+ Create New Class" button
+  - Consistent with Students and Teachers pages
+- ✅ **Updated actions column**:
+  - Changed from "View Details | Delete" to "View Details | Edit"
+  - Edit button styled in blue (btn-primary)
+- ✅ **Edit Class functionality**:
+  - Full edit modal with all class fields pre-populated
+  - Dynamic student loading based on selected grade
+  - Updates all fields including teachers and monitors
+- ✅ **Safe delete mechanism**:
+  - Delete moved to "Additional Actions" dropdown in View Details modal
+  - Prevents accidental deletion
+- ✅ **Fixed class_full_info view**:
+  - Updated column names to match frontend expectations
+  - Changed: `class_teacher` → `class_teacher_name`
+  - Changed: `total_students` → `student_count`
+  - Added ID fields for edit functionality
+- ✅ **Improved Class Details modal layout**:
+  - Increased width from 700px to 900px
+  - Organized into sections: Class Information, Teachers, Monitors
+  - Added visual separators and better spacing
+- ✅ **Monitors display enhancement**:
+  - Changed from comma-separated to line-separated display
+  - Shows Class Monitor and Vice Class Monitor on separate lines
+
+##### 2. Subjects Management Overhaul
+
+- ✅ **Merged filters into Subjects List card**:
+  - Single card layout with integrated filters
+  - Gray background box for filter controls
+  - Grid layout: `150px 2fr 140px 140px` for optimal spacing
+- ✅ **Added "Apply Filters" button**:
+  - Manual filter application instead of auto-filtering
+  - Improved performance and user control
+- ✅ **Added "Clear Filters" button**:
+  - Quick reset to show all subjects
+- ✅ **Removed "Refresh" button**:
+  - Streamlined interface
+- ✅ **"+ Add New Subject" button**:
+  - Modal-based form for adding custom subjects
+  - Fields: Subject Code, Subject Name, Subject Type, Applicable Grades
+  - Note about pre-defined subjects
+- ✅ **Increased modal widths**:
+  - Add Subject Modal: 700px
+  - Assign Teacher Modal: 500px → 700px
+
+##### 3. UI/UX Improvements Across All Pages
+
+- ✅ **Increased container width** from 1200px to **1400px**:
+  - Students List
+  - Teachers List
+  - Classes List
+  - Subjects List
+  - Weekly Timetable
+  - Dashboard
+- ✅ **More horizontal space** for better content organization
+- ✅ **Improved readability** across all admin pages
+
+##### 4. Database Updates
+
+- ✅ **Recreated class_full_info view**:
+  - Fixed column naming mismatches
+  - Added ID fields for proper edit functionality
+  - Corrected student count aggregation
+
+#### **Files Modified in This Session**
+
+- `admin/classes.html` - Modal form, edit functionality, safe delete, improved layout
+- `admin/subjects.html` - Merged filters, Add Subject modal, improved layout
+- `admin/students.html` - Increased container width
+- `admin/teachers.html` - Increased container width
+- `admin/timetable.html` - Increased container width
+- `admin/dashboard.html` - Increased container width
+- `schema.sql` - Updated class_full_info view
+
+#### **SQL Commands Executed**
+
+```sql
+DROP VIEW IF EXISTS class_full_info;
+
+CREATE OR REPLACE VIEW class_full_info AS
+SELECT 
+    c.id,
+    c.grade,
+    c.class_letter,
+    c.class_name,
+    c.class_teacher_id,
+    c.vice_class_teacher_id,
+    c.class_monitor_id,
+    c.vice_class_monitor_id,
+    ct.name_with_initials AS class_teacher_name,
+    vct.name_with_initials AS vice_class_teacher_name,
+    cm.name_with_initials AS class_monitor_name,
+    vcm.name_with_initials AS vice_class_monitor_name,
+    COUNT(s.id) AS student_count
+FROM classes c
+LEFT JOIN teachers ct ON c.class_teacher_id = ct.id
+LEFT JOIN teachers vct ON c.vice_class_teacher_id = vct.id
+LEFT JOIN students cm ON c.class_monitor_id = cm.id
+LEFT JOIN students vcm ON c.vice_class_monitor_id = vcm.id
+LEFT JOIN students s ON s.class_id = c.id
+GROUP BY c.id, c.grade, c.class_letter, c.class_name, 
+         c.class_teacher_id, c.vice_class_teacher_id,
+         c.class_monitor_id, c.vice_class_monitor_id,
+         ct.name_with_initials, vct.name_with_initials,
+         cm.name_with_initials, vcm.name_with_initials;
+```
+
+#### **Summary of Session 3**
+
+- **Focus**: Classes and Subjects management enhancement, UI consistency
+- **Key Improvements**:
+  - Full CRUD operations for Classes (matching Students/Teachers pattern)
+  - Streamlined Subjects page with merged filters and Add Subject feature
+  - Increased container width across all pages for better layout
+  - Fixed database view column naming issues
+  - Enhanced visual organization with sections and separators
+- **Status**: All admin pages now have consistent UI patterns and improved usability

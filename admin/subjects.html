@@ -6,6 +6,9 @@
     <title>Manage Subjects - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <style>
+        .container { max-width: 1400px; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -22,43 +25,45 @@
     </nav>
 
     <div class="container">
-        <h1>Manage Subjects</h1>
-        
-        <div class="card">
-            <h2>Filter Subjects</h2>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                <div class="form-group">
-                    <label>Grade</label>
-                    <select id="filterGrade" onchange="filterSubjects()">
-                        <option value="">All Subjects</option>
-                        <option value="6">Grade 6</option>
-                        <option value="7">Grade 7</option>
-                        <option value="8">Grade 8</option>
-                        <option value="9">Grade 9</option>
-                        <option value="10">Grade 10-11</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Subject Type</label>
-                    <select id="filterType" onchange="filterSubjects()">
-                        <option value="">All Types</option>
-                        <option value="General - Main Subjects">General - Main Subjects (Grade 6-9)</option>
-                        <option value="General - Other Subjects">General - Other Subjects (Grade 6-9)</option>
-                        <option value="General - Basket Subjects">General - Basket Subjects (Grade 6-9)</option>
-                        <option value="OL - Main Subjects">OL - Main Subjects (Grade 10-11)</option>
-                        <option value="OL - Basket 1">OL - Basket 1 (Languages & Social)</option>
-                        <option value="OL - Basket 2">OL - Basket 2 (Arts & Literature)</option>
-                        <option value="OL - Basket 3">OL - Basket 3 (Technology & Health)</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button onclick="loadSubjects()" class="btn btn-primary">Refresh</button>
-                </div>
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h1>Manage Subjects</h1>
+            <button onclick="openAddSubjectModal()" class="btn btn-primary">+ Add New Subject</button>
         </div>
 
         <div class="card">
             <h2>Subjects List</h2>
+            
+            <!-- Filters -->
+            <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+                <div style="display: grid; grid-template-columns: 150px 2fr 140px 140px; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.9rem;">Grade</label>
+                        <select id="filterGrade" style="font-size: 0.9rem;">
+                            <option value="">All Grades</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10-11</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.9rem;">Subject Type</label>
+                        <select id="filterType" style="font-size: 0.9rem;">
+                            <option value="">All Types</option>
+                            <option value="General - Main Subjects">General - Main Subjects (Grade 6-9)</option>
+                            <option value="General - Other Subjects">General - Other Subjects (Grade 6-9)</option>
+                            <option value="General - Basket Subjects">General - Basket Subjects (Grade 6-9)</option>
+                            <option value="OL - Main Subjects">OL - Main Subjects (Grade 10-11)</option>
+                            <option value="OL - Basket 1">OL - Basket 1 (Languages & Social)</option>
+                            <option value="OL - Basket 2">OL - Basket 2 (Arts & Literature)</option>
+                            <option value="OL - Basket 3">OL - Basket 3 (Technology & Health)</option>
+                        </select>
+                    </div>
+                    <button onclick="applyFilters()" class="btn btn-primary" style="font-size: 0.9rem;">Apply Filters</button>
+                    <button onclick="clearFilters()" class="btn" style="font-size: 0.9rem;">Clear Filters</button>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table id="subjectsTable">
                     <thead>
@@ -81,9 +86,60 @@
         </div>
     </div>
 
+    <!-- Add Subject Modal -->
+    <div id="addSubjectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Add New Subject</h2>
+                <button onclick="closeAddSubjectModal()" class="btn">Close</button>
+            </div>
+            <p style="color: #666; font-style: italic; margin-bottom: 1rem;">Note: Subjects are pre-defined in the system. Use this form only if you need to add a custom subject.</p>
+            <form id="addSubjectForm">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Subject Code *</label>
+                        <input type="text" id="subjectCode" required placeholder="e.g., CUST01">
+                    </div>
+                    <div class="form-group">
+                        <label>Subject Name *</label>
+                        <input type="text" id="subjectName" required placeholder="e.g., Custom Subject">
+                    </div>
+                    <div class="form-group">
+                        <label>Subject Type *</label>
+                        <select id="subjectType" required>
+                            <option value="">Select Type</option>
+                            <option value="Main Subject - General (Grade 6-9)">Main Subject - General (Grade 6-9)</option>
+                            <option value="Other Subject - General (Grade 6-9)">Other Subject - General (Grade 6-9)</option>
+                            <option value="Basket Subject - General (Grade 6-9)">Basket Subject - General (Grade 6-9)</option>
+                            <option value="Main Subject - OL (Grade 10-11)">Main Subject - OL (Grade 10-11)</option>
+                            <option value="Basket Subject - 1st Basket (Grade 10-11)">Basket Subject - 1st Basket (Grade 10-11)</option>
+                            <option value="Basket Subject - 2nd Basket (Grade 10-11)">Basket Subject - 2nd Basket (Grade 10-11)</option>
+                            <option value="Basket Subject - 3rd Basket (Grade 10-11)">Basket Subject - 3rd Basket (Grade 10-11)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Applicable Grades *</label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="6"> Grade 6</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="7"> Grade 7</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="8"> Grade 8</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="9"> Grade 9</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="10"> Grade 10</label>
+                            <label style="display: flex; align-items: center; gap: 0.3rem;"><input type="checkbox" name="grades" value="11"> Grade 11</label>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                    <button type="button" onclick="closeAddSubjectModal()" class="btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Assign Teacher Modal -->
-    <div id="assignTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; max-width: 500px; margin: 5rem auto; border-radius: 8px; padding: 2rem;">
+    <div id="assignTeacherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2>Assign Teacher to Subject</h2>
                 <button onclick="closeModal()" class="btn">Close</button>
@@ -156,8 +212,8 @@
             }).join('');
         }
 
-        // Filter subjects
-        function filterSubjects() {
+        // Apply filters
+        function applyFilters() {
             const grade = document.getElementById('filterGrade').value;
             const type = document.getElementById('filterType').value;
             
@@ -314,13 +370,70 @@
             }
         }
 
-        // Close modal
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterGrade').value = '';
+            document.getElementById('filterType').value = '';
+            displaySubjects(allSubjects);
+        }
+
+        // Modal functions
+        function openAddSubjectModal() {
+            document.getElementById('addSubjectModal').style.display = 'block';
+        }
+
+        function closeAddSubjectModal() {
+            document.getElementById('addSubjectModal').style.display = 'none';
+            document.getElementById('addSubjectForm').reset();
+        }
+
         function closeModal() {
             document.getElementById('assignTeacherModal').style.display = 'none';
             currentSubjectId = null;
         }
 
-        // Close modal on outside click
+        // Add subject form handler
+        document.getElementById('addSubjectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const checkboxes = document.querySelectorAll('input[name="grades"]:checked');
+            if (checkboxes.length === 0) {
+                alert('Please select at least one applicable grade');
+                return;
+            }
+            
+            const grades = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            const subjectData = {
+                subject_code: document.getElementById('subjectCode').value.toUpperCase(),
+                subject_name: document.getElementById('subjectName').value,
+                subject_type: document.getElementById('subjectType').value,
+                applicable_grades: grades
+            };
+            
+            try {
+                const client = getSupabaseClient();
+                const { data, error } = await client
+                    .from('subjects')
+                    .insert([subjectData])
+                    .select();
+                
+                if (error) throw error;
+                
+                alert('Subject added successfully!');
+                closeAddSubjectModal();
+                await loadSubjects();
+            } catch (error) {
+                console.error('Error adding subject:', error);
+                alert('Error adding subject: ' + error.message);
+            }
+        });
+
+        // Close modals on outside click
+        document.getElementById('addSubjectModal').addEventListener('click', (e) => {
+            if (e.target.id === 'addSubjectModal') closeAddSubjectModal();
+        });
+        
         document.getElementById('assignTeacherModal').addEventListener('click', (e) => {
             if (e.target.id === 'assignTeacherModal') closeModal();
         });
