@@ -161,11 +161,16 @@ CREATE TABLE marks (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     student_id UUID REFERENCES students(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
-    exam_name TEXT NOT NULL,
+    class_id UUID REFERENCES classes(id) ON DELETE CASCADE,
+    exam_name TEXT NOT NULL CHECK (exam_name IN ('First Term', 'Second Term', 'Third Term')),
     exam_date DATE,
     marks INTEGER NOT NULL CHECK (marks >= 0 AND marks <= 100),
     grade TEXT,
     entered_by UUID REFERENCES teachers(id) ON DELETE SET NULL,
+    approval_status TEXT NOT NULL DEFAULT 'Pending' CHECK (approval_status IN ('Pending', 'Approved', 'Recheck Required')),
+    approved_by UUID REFERENCES teachers(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    recheck_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -173,7 +178,10 @@ CREATE TABLE marks (
 -- Create indexes for marks
 CREATE INDEX idx_marks_student_id ON marks(student_id);
 CREATE INDEX idx_marks_subject_id ON marks(subject_id);
+CREATE INDEX idx_marks_class_id ON marks(class_id);
 CREATE INDEX idx_marks_exam_name ON marks(exam_name);
+CREATE INDEX idx_marks_approval_status ON marks(approval_status);
+CREATE INDEX idx_marks_entered_by ON marks(entered_by);
 
 -- ==================== TIMETABLE TABLE ====================
 CREATE TABLE timetable (
@@ -196,6 +204,25 @@ CREATE INDEX idx_timetable_class_id ON timetable(class_id);
 CREATE INDEX idx_timetable_day ON timetable(day_of_week);
 CREATE INDEX idx_timetable_subject ON timetable(subject_id);
 CREATE INDEX idx_timetable_teacher ON timetable(teacher_id);
+
+-- ==================== NOTIFICATIONS TABLE ====================
+CREATE TABLE notifications (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    recipient_id UUID REFERENCES teachers(id) ON DELETE CASCADE,
+    recipient_type TEXT NOT NULL CHECK (recipient_type IN ('admin', 'teacher')),
+    notification_type TEXT NOT NULL CHECK (notification_type IN ('marks_submitted', 'marks_approved', 'marks_recheck_required')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    related_marks_id UUID REFERENCES marks(id) ON DELETE CASCADE,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for notifications
+CREATE INDEX idx_notifications_recipient ON notifications(recipient_id);
+CREATE INDEX idx_notifications_type ON notifications(notification_type);
+CREATE INDEX idx_notifications_read ON notifications(is_read);
+CREATE INDEX idx_notifications_created ON notifications(created_at);
 
 -- ==================== ADD FOREIGN KEY CONSTRAINTS FOR CLASS MONITORS ====================
 ALTER TABLE classes
@@ -378,9 +405,12 @@ GROUP BY s.id, s.name_with_initials, s.admission_no, c.class_name;
 CREATE OR REPLACE VIEW student_marks_detailed AS
 SELECT 
     m.id,
+    m.student_id,
     s.admission_no,
     s.name_with_initials AS student_name,
+    m.class_id,
     c.class_name,
+    m.subject_id,
     sub.subject_code,
     sub.subject_name,
     m.exam_name,
@@ -393,12 +423,42 @@ SELECT
         WHEN m.marks >= 35 THEN 'S'
         ELSE 'W'
     END AS grade,
-    t.name_with_initials AS entered_by_teacher
+    m.entered_by,
+    t.name_with_initials AS entered_by_teacher,
+    m.approval_status,
+    m.approved_by,
+    approver.name_with_initials AS approved_by_name,
+    m.approved_at,
+    m.recheck_reason,
+    m.created_at,
+    m.updated_at
 FROM marks m
 JOIN students s ON m.student_id = s.id
-LEFT JOIN classes c ON s.class_id = c.id
+JOIN classes c ON m.class_id = c.id
 JOIN subjects sub ON m.subject_id = sub.id
-LEFT JOIN teachers t ON m.entered_by = t.id;
+LEFT JOIN teachers t ON m.entered_by = t.id
+LEFT JOIN teachers approver ON m.approved_by = approver.id;
+
+-- View for pending marks submissions (for admin approval)
+CREATE OR REPLACE VIEW marks_pending_approval AS
+SELECT 
+    m.id,
+    m.student_id,
+    s.admission_no,
+    s.name_with_initials AS student_name,
+    c.class_name,
+    sub.subject_name,
+    m.exam_name,
+    m.marks,
+    t.name_with_initials AS entered_by_name,
+    m.created_at
+FROM marks m
+JOIN students s ON m.student_id = s.id
+JOIN classes c ON m.class_id = c.id
+JOIN subjects sub ON m.subject_id = sub.id
+LEFT JOIN teachers t ON m.entered_by = t.id
+WHERE m.approval_status = 'Pending'
+ORDER BY m.created_at DESC;
 
 -- ==================== FUNCTIONS ====================
 

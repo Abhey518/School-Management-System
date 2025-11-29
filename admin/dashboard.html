@@ -20,11 +20,91 @@
             <a href="teachers.html">Teachers</a>
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
+            <a href="marks-approval.html">Marks Approval</a>
             <a href="timetable.html">Timetable</a>
-            <a href="settings.html">Settings</a>
+            <div style="position: relative; display: inline-block;">
+                <a href="#" onclick="toggleNotifications(event)" style="position: relative; padding: 0.5rem 0.75rem;">
+                    🔔
+                    <span id="notificationBadge" style="display: none; position: absolute; top: 0; right: 0; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; text-align: center; line-height: 18px; font-weight: bold;"></span>
+                </a>
+            </div>
+            <a href="#" onclick="toggleSettings(event)">⚙️</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
+
+    <!-- Settings Dropdown Modal -->
+    <div id="settingsDropdown" style="display: none; position: fixed; top: 60px; right: 100px; width: 350px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 80vh; overflow-y: auto;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid #eee;">
+            <h3 style="margin: 0; font-size: 1.25rem;">⚙️ Settings</h3>
+        </div>
+        <div style="padding: 1.5rem;">
+            <!-- School Timings -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333;">School Timings</h4>
+                <div style="display: grid; gap: 1rem;">
+                    <div class="form-group">
+                        <label style="font-size: 0.9rem;">School Start Time</label>
+                        <select id="schoolStartTime" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="07:30">7:30 AM</option>
+                            <option value="08:00" selected>8:00 AM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.9rem;">School End Time</label>
+                        <select id="schoolEndTime" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="13:30">1:30 PM</option>
+                            <option value="14:00" selected>2:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="saveTimings()" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem; padding: 0.5rem;">Save Timings</button>
+            </div>
+
+            <!-- Theme Settings -->
+            <div style="margin-bottom: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                <h4 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333;">Theme Settings</h4>
+                <div class="form-group">
+                    <label style="font-size: 0.9rem;">Theme</label>
+                    <select id="themeSelect" onchange="previewTheme()" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="light">Light Theme</option>
+                        <option value="dark">Dark Theme</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                    <button onclick="saveTheme()" class="btn btn-primary" style="flex: 1; padding: 0.5rem;">Save</button>
+                    <button onclick="resetTheme()" class="btn" style="flex: 1; padding: 0.5rem;">Reset</button>
+                </div>
+            </div>
+
+            <!-- Academic Year Settings -->
+            <div style="padding-top: 1.5rem; border-top: 1px solid #eee;">
+                <h4 style="margin: 0 0 1rem 0; font-size: 1rem; color: #333;">Academic Year</h4>
+                <div style="display: grid; gap: 1rem;">
+                    <div class="form-group">
+                        <label style="font-size: 0.9rem;">Current Academic Year</label>
+                        <input type="text" id="academicYear" placeholder="e.g., 2025" value="2025" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 0.9rem;">School Name</label>
+                        <input type="text" id="schoolName" placeholder="Enter school name" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <button onclick="saveAcademicSettings()" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem; padding: 0.5rem;">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Dropdown Modal -->
+    <div id="notificationsDropdown" style="display: none; position: fixed; top: 60px; right: 150px; width: 400px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 500px; overflow-y: auto;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1.25rem;">🔔 Notifications</h3>
+            <button onclick="markAllAsRead()" style="background: none; border: none; color: #4CAF50; cursor: pointer; font-size: 0.85rem; text-decoration: underline;">Mark all as read</button>
+        </div>
+        <div id="notificationsList" style="padding: 0;">
+            <!-- Notifications will be loaded here -->
+        </div>
+    </div>
 
     <div class="container">
         <h1>Administrator Dashboard</h1>
@@ -63,7 +143,11 @@
     <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
+    <script src="admin-navbar.js"></script>
     <script>
+        const supabase = getSupabaseClient();
+
+        // ============= Dashboard Statistics =============
         // Load dashboard statistics
         async function loadDashboardStats() {
             try {
@@ -87,7 +171,10 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', loadDashboardStats);
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDashboardStats();
+        });
     </script>
 </body>
 </html>

@@ -20,8 +20,15 @@
             <a href="teachers.html">Teachers</a>
             <a href="classes.html" class="active">Classes</a>
             <a href="subjects.html">Subjects</a>
+            <a href="marks-approval.html">Marks Approval</a>
             <a href="timetable.html">Timetable</a>
-            <a href="settings.html">Settings</a>
+            <div style="position: relative; display: inline-block;">
+                <a href="#" onclick="toggleNotifications(event)" style="position: relative; padding: 0.5rem 0.75rem;">
+                    🔔
+                    <span id="notificationBadge" style="display: none; position: absolute; top: 0; right: 0; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; text-align: center; line-height: 18px; font-weight: bold;"></span>
+                </a>
+            </div>
+            <a href="#" onclick="toggleSettings(event)">⚙️</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -206,6 +213,7 @@
     <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
+    <script src="admin-navbar.js"></script>
     <script>
         let teachersData = [];
         let studentsData = [];

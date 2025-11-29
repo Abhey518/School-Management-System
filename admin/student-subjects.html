@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Subject Assignment - Admin Portal</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
+    <style>
+        .container { max-width: 1400px; }
+        .subtitle { color: #666; margin-top: -0.5rem; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="student-subjects.html" class="active">Student Subjects</a>
+            <a href="marks-approval.html">Marks Approval</a>
+            <a href="timetable.html">Timetable</a>
+            <a href="settings.html">Settings</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Student Subject Assignment</h1>
+        <p class="subtitle">Assign basket subjects to students for the academic year</p>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Students List</h2>
+                <button onclick="clearFilters()" class="btn" style="font-size: 0.9rem;">Clear Filters</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 150px 200px; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 0.9rem;">Class</label>
+                    <select id="filterClass" style="font-size: 0.9rem; padding: 0.4rem;">
+                        <option value="">All Classes</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-size: 0.9rem;">Academic Year</label>
+                    <select id="filterAcademicYear" style="font-size: 0.9rem; padding: 0.4rem;">
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <button onclick="loadStudents()" class="btn btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.5rem;">Apply Filters</button>
+                    <button onclick="clearFilters()" class="btn" style="flex: 1; font-size: 0.9rem; padding: 0.5rem;">Clear</button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <input type="text" id="searchInput" placeholder="Search students..." onkeyup="filterStudentsTable()" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">Admission No</th>
+                            <th style="text-align: center;">Student Name</th>
+                            <th style="text-align: center;">Class</th>
+                            <th style="text-align: center;">Grade</th>
+                            <th style="text-align: center;">Assigned Subjects</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Select filters and click Apply to load students</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Assign Subjects Modal -->
+    <div id="assignSubjectsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Assign Subjects</h2>
+                <button onclick="closeAssignSubjectsModal()" class="btn">Close</button>
+            </div>
+            
+            <div id="studentInfo" style="background: #f5f5f5; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                <!-- Student info will be populated here -->
+            </div>
+
+            <form id="assignSubjectsForm">
+                <input type="hidden" id="studentId">
+                <input type="hidden" id="studentGrade">
+                
+                <div style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="academicYear" style="font-weight: 600; margin-bottom: 8px; display: block;">Academic Year</label>
+                        <select id="academicYear" required style="width: 200px; padding: 0.5rem;">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Main Subjects -->
+                <div style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: #2c5aa0; font-size: 16px;">Main Subjects (Auto-assigned)</h3>
+                    <div id="mainSubjectsList" style="background: #f5f5f5; padding: 0.8rem; border-radius: 4px;">
+                        <!-- Main subjects will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Basket Subjects -->
+                <div id="generalBasketCard" style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: #2c5aa0; font-size: 16px;">Basket Subjects - General (Grade 6-9)</h3>
+                    <div id="generalBasketSubjects" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                        <!-- General basket subjects will be populated here -->
+                    </div>
+                </div>
+
+                <!-- O/L Baskets -->
+                <div id="olBasketSection" style="display: none; background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: #2c5aa0; font-size: 16px;">O/L Basket Subjects (Grade 10-11)</h3>
+                    
+                    <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd;">
+                        <h4 style="margin: 0 0 0.8rem 0; font-size: 15px; font-weight: 600;">1st Basket</h4>
+                        <div id="firstBasketSubjects" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <!-- 1st basket subjects -->
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd;">
+                        <h4 style="margin: 0 0 0.8rem 0; font-size: 15px; font-weight: 600;">2nd Basket</h4>
+                        <div id="secondBasketSubjects" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <!-- 2nd basket subjects -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin: 0 0 0.8rem 0; font-size: 15px; font-weight: 600;">3rd Basket</h4>
+                        <div id="thirdBasketSubjects" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <!-- 3rd basket subjects -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+                    <button type="button" class="btn" onclick="closeAssignSubjectsModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Assignments</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="../shared/theme.js"></script>
+    <script>
+        // Initialize Supabase client
+        const supabase = getSupabaseClient();
+        
+        let allStudents = [];
+        let allSubjects = [];
+
+        // Load classes for filter
+        async function loadClasses() {
+            try {
+                const { data, error } = await supabase
+                    .from('class_full_info')
+                    .select('*')
+                    .order('grade', { ascending: true })
+                    .order('class_letter', { ascending: true });
+
+                if (error) throw error;
+
+                const select = document.getElementById('filterClass');
+                select.innerHTML = '<option value="">All Classes</option>';
+                data.forEach(cls => {
+                    const option = document.createElement('option');
+                    option.value = cls.id;
+                    option.textContent = cls.class_name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        // Load students based on filters
+        async function loadStudents() {
+            try {
+                const classId = document.getElementById('filterClass').value;
+                const academicYear = document.getElementById('filterAcademicYear').value;
+
+                let query = supabase
+                    .from('student_brief_view')
+                    .select('*');
+
+                if (classId) {
+                    query = query.eq('class_id', classId);
+                }
+
+                const { data: students, error: studentsError } = await query.order('admission_no');
+
+                if (studentsError) throw studentsError;
+
+                // Load student subjects for the selected academic year
+                const { data: assignments, error: assignmentsError } = await supabase
+                    .from('student_subjects')
+                    .select(`
+                        student_id,
+                        subject_id,
+                        subjects (
+                            subject_name,
+                            subject_type
+                        )
+                    `)
+                    .eq('academic_year', academicYear);
+
+                if (assignmentsError) throw assignmentsError;
+
+                // Group assignments by student
+                const assignmentsByStudent = {};
+                assignments.forEach(assignment => {
+                    if (!assignmentsByStudent[assignment.student_id]) {
+                        assignmentsByStudent[assignment.student_id] = [];
+                    }
+                    assignmentsByStudent[assignment.student_id].push(assignment.subjects);
+                });
+
+                allStudents = students.map(student => ({
+                    ...student,
+                    subjects: assignmentsByStudent[student.id] || []
+                }));
+
+                displayStudents();
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('Error loading students: ' + error.message);
+            }
+        }
+
+        // Display students in table
+        function displayStudents() {
+            const tbody = document.getElementById('studentsTableBody');
+            
+            if (allStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No students found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allStudents.map(student => `
+                <tr>
+                    <td>${student.admission_no}</td>
+                    <td>${student.name_with_initials}</td>
+                    <td>${student.class_name || 'Not Assigned'}</td>
+                    <td>${student.grade || '-'}</td>
+                    <td>${student.subjects.length > 0 ? student.subjects.length + ' subjects' : 'No subjects assigned'}</td>
+                    <td>
+                        <button class="btn-primary btn-sm" onclick="openAssignSubjectsModal('${student.id}', '${student.name_with_initials}', ${student.grade})">
+                            Assign Subjects
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter students table by search
+        function filterStudentsTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredStudents = allStudents.filter(student => 
+                student.admission_no.toLowerCase().includes(searchTerm) ||
+                student.name_with_initials.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = filteredStudents.map(student => `
+                <tr>
+                    <td>${student.admission_no}</td>
+                    <td>${student.name_with_initials}</td>
+                    <td>${student.class_name || 'Not Assigned'}</td>
+                    <td>${student.grade || '-'}</td>
+                    <td>${student.subjects.length > 0 ? student.subjects.length + ' subjects' : 'No subjects assigned'}</td>
+                    <td>
+                        <button class="btn-primary btn-sm" onclick="openAssignSubjectsModal('${student.id}', '${student.name_with_initials}', ${student.grade})">
+                            Assign Subjects
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('filterClass').value = '';
+            document.getElementById('filterAcademicYear').value = '2025';
+            document.getElementById('searchInput').value = '';
+            allStudents = [];
+            document.getElementById('studentsTableBody').innerHTML = 
+                '<tr><td colspan="6" style="text-align: center;">Select filters and click Apply to load students</td></tr>';
+        }
+
+        // Load all subjects
+        async function loadSubjects() {
+            try {
+                const { data, error } = await supabase
+                    .from('subjects')
+                    .select('*')
+                    .order('subject_type')
+                    .order('subject_name');
+
+                if (error) throw error;
+                allSubjects = data;
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        }
+
+        // Open assign subjects modal
+        async function openAssignSubjectsModal(studentId, studentName, grade) {
+            document.getElementById('studentId').value = studentId;
+            document.getElementById('studentGrade').value = grade;
+            document.getElementById('academicYear').value = document.getElementById('filterAcademicYear').value;
+
+            // Display student info
+            document.getElementById('studentInfo').innerHTML = `
+                <p><strong>Student:</strong> ${studentName}</p>
+                <p><strong>Grade:</strong> ${grade}</p>
+            `;
+
+            // Load currently assigned subjects
+            const { data: currentAssignments, error } = await supabase
+                .from('student_subjects')
+                .select('subject_id')
+                .eq('student_id', studentId)
+                .eq('academic_year', document.getElementById('academicYear').value);
+
+            if (error) {
+                console.error('Error loading current assignments:', error);
+            }
+
+            const assignedSubjectIds = currentAssignments ? currentAssignments.map(a => a.subject_id) : [];
+
+            // Populate subjects by category
+            populateMainSubjects(grade);
+            populateBasketSubjects(grade, assignedSubjectIds);
+
+            document.getElementById('assignSubjectsModal').style.display = 'block';
+        }
+
+        // Populate main subjects
+        function populateMainSubjects(grade) {
+            const mainSubjects = allSubjects.filter(s => 
+                s.subject_type === 'Main Subject' && s.applicable_grades.includes(grade)
+            );
+
+            const container = document.getElementById('mainSubjectsList');
+            container.innerHTML = mainSubjects.length > 0 
+                ? mainSubjects.map(s => `<p>• ${s.subject_name}</p>`).join('')
+                : '<p>No main subjects for this grade</p>';
+        }
+
+        // Populate basket subjects
+        function populateBasketSubjects(grade, assignedSubjectIds) {
+            // General Basket (Grade 6-9)
+            if (grade >= 6 && grade <= 9) {
+                const generalBasket = allSubjects.filter(s => 
+                    s.subject_type === 'Basket Subject - General (Grade 6-9)' && 
+                    s.applicable_grades.includes(grade)
+                );
+                document.getElementById('generalBasketSubjects').innerHTML = 
+                    generateCheckboxes(generalBasket, assignedSubjectIds);
+                document.getElementById('olBasketSection').style.display = 'none';
+            } else {
+                document.getElementById('generalBasketSubjects').innerHTML = '';
+            }
+
+            // O/L Baskets (Grade 10-11)
+            if (grade >= 10 && grade <= 11) {
+                const firstBasket = allSubjects.filter(s => 
+                    s.subject_type === 'Basket Subject - 1st Basket (Grade 10-11)' && 
+                    s.applicable_grades.includes(grade)
+                );
+                const secondBasket = allSubjects.filter(s => 
+                    s.subject_type === 'Basket Subject - 2nd Basket (Grade 10-11)' && 
+                    s.applicable_grades.includes(grade)
+                );
+                const thirdBasket = allSubjects.filter(s => 
+                    s.subject_type === 'Basket Subject - 3rd Basket (Grade 10-11)' && 
+                    s.applicable_grades.includes(grade)
+                );
+
+                document.getElementById('firstBasketSubjects').innerHTML = 
+                    generateCheckboxes(firstBasket, assignedSubjectIds);
+                document.getElementById('secondBasketSubjects').innerHTML = 
+                    generateCheckboxes(secondBasket, assignedSubjectIds);
+                document.getElementById('thirdBasketSubjects').innerHTML = 
+                    generateCheckboxes(thirdBasket, assignedSubjectIds);
+                document.getElementById('olBasketSection').style.display = 'block';
+            } else {
+                document.getElementById('olBasketSection').style.display = 'none';
+            }
+        }
+
+        // Generate checkboxes for subjects
+        function generateCheckboxes(subjects, assignedSubjectIds) {
+            if (subjects.length === 0) {
+                return '<p style="color: #666; font-size: 14px;">No subjects available</p>';
+            }
+
+            return subjects.map(subject => `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" 
+                           id="subject_${subject.id}" 
+                           name="subjects" 
+                           value="${subject.id}"
+                           ${assignedSubjectIds.includes(subject.id) ? 'checked' : ''}
+                           style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="subject_${subject.id}" style="cursor: pointer; margin: 0; font-size: 14px;">${subject.subject_name}</label>
+                </div>
+            `).join('');
+        }
+
+        // Close assign subjects modal
+        function closeAssignSubjectsModal() {
+            document.getElementById('assignSubjectsModal').style.display = 'none';
+        }
+
+        // Handle form submission
+        document.getElementById('assignSubjectsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const studentId = document.getElementById('studentId').value;
+            const academicYear = document.getElementById('academicYear').value;
+            const checkboxes = document.querySelectorAll('input[name="subjects"]:checked');
+            const selectedSubjectIds = Array.from(checkboxes).map(cb => cb.value);
+
+            try {
+                // Delete existing assignments for this student and academic year
+                const { error: deleteError } = await supabase
+                    .from('student_subjects')
+                    .delete()
+                    .eq('student_id', studentId)
+                    .eq('academic_year', academicYear);
+
+                if (deleteError) throw deleteError;
+
+                // Insert new assignments
+                if (selectedSubjectIds.length > 0) {
+                    const assignments = selectedSubjectIds.map(subjectId => ({
+                        student_id: studentId,
+                        subject_id: subjectId,
+                        academic_year: academicYear
+                    }));
+
+                    const { error: insertError } = await supabase
+                        .from('student_subjects')
+                        .insert(assignments);
+
+                    if (insertError) throw insertError;
+                }
+
+                alert('Subject assignments saved successfully!');
+                closeAssignSubjectsModal();
+                loadStudents(); // Reload students to show updated assignments
+            } catch (error) {
+                console.error('Error saving assignments:', error);
+                alert('Error saving assignments: ' + error.message);
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('assignSubjectsModal');
+            if (event.target === modal) {
+                closeAssignSubjectsModal();
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClasses();
+            loadSubjects();
+        });
+    </script>
+</body>
+</html>

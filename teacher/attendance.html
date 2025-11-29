@@ -41,119 +41,307 @@
         </div>
 
         <div class="card" id="attendanceCard" style="display: none;">
-            <h2>Mark Attendance</h2>
-            <div class="table-responsive">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Mark Attendance</h2>
+                <div id="attendanceStatus" style="color: #28a745; font-weight: 600;"></div>
+            </div>
+            <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Admission No</th>
-                            <th>Student Name</th>
-                            <th>Status</th>
+                            <th style="text-align: center;">Admission No</th>
+                            <th style="text-align: center;">Student Name</th>
+                            <th style="text-align: center;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="attendanceTableBody">
                     </tbody>
                 </table>
             </div>
-            <button onclick="submitAttendance()" class="btn btn-primary" style="margin-top: 20px;">Submit Attendance</button>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="submitAttendance()" class="btn btn-primary" id="submitBtn">Submit Attendance</button>
+                <button onclick="updateAttendance()" class="btn btn-primary" id="updateBtn" style="display: none; background: #ffc107; color: #000;">Update Attendance</button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
-    <script src="teacher.js"></script>
     <script>
+        // Initialize Supabase client
+        const supabase = getSupabaseClient();
+        
+        // TODO: Replace with actual teacher ID from authentication
+        // For now, get the first teacher from the database
+        let CURRENT_TEACHER_ID = null;
+        
+        // Initialize teacher ID
+        async function initializeTeacherId() {
+            try {
+                const { data, error } = await supabase
+                    .from('teachers')
+                    .select('id')
+                    .limit(1)
+                    .single();
+                
+                if (error) throw error;
+                CURRENT_TEACHER_ID = data.id;
+            } catch (error) {
+                console.error('Error getting teacher ID:', error);
+            }
+        }
+
         // Set today's date as default
         document.getElementById('attendanceDate').valueAsDate = new Date();
 
-        // Load classes for dropdown
+        // Load classes for dropdown - from teacher's timetable assignments
         async function loadClassesDropdown() {
             try {
-                const classes = await getClasses();
-                const select = document.getElementById('classSelect');
+                // Make sure teacher ID is initialized
+                if (!CURRENT_TEACHER_ID) {
+                    await initializeTeacherId();
+                }
                 
-                classes.forEach(cls => {
+                if (!CURRENT_TEACHER_ID) {
+                    document.getElementById('classSelect').innerHTML = '<option value="">No teacher found</option>';
+                    return;
+                }
+                
+                // First, get all timetable entries for this teacher
+                const { data: timetableData, error: timetableError } = await supabase
+                    .from('timetable')
+                    .select('class_id')
+                    .eq('teacher_id', CURRENT_TEACHER_ID);
+
+                if (timetableError) throw timetableError;
+
+                if (!timetableData || timetableData.length === 0) {
+                    document.getElementById('classSelect').innerHTML = '<option value="">No classes assigned</option>';
+                    return;
+                }
+
+                // Get unique class IDs
+                const uniqueClassIds = [...new Set(timetableData.map(t => t.class_id))];
+
+                // Fetch class details
+                const { data: classesData, error: classesError } = await supabase
+                    .from('classes')
+                    .select('id, class_name')
+                    .in('id', uniqueClassIds)
+                    .order('class_name');
+
+                if (classesError) throw classesError;
+
+                const select = document.getElementById('classSelect');
+                select.innerHTML = '<option value="">Select a class</option>';
+                
+                classesData.forEach(cls => {
                     const option = document.createElement('option');
-                    option.value = cls.name;
-                    option.textContent = cls.name;
+                    option.value = cls.id;
+                    option.textContent = cls.class_name;
                     select.appendChild(option);
                 });
             } catch (error) {
                 console.error('Error loading classes:', error);
+                alert('Error loading classes: ' + error.message);
             }
         }
 
         // Load students for attendance
         async function loadStudentsForAttendance() {
-            const selectedClass = document.getElementById('classSelect').value;
+            const selectedClassId = document.getElementById('classSelect').value;
             const selectedDate = document.getElementById('attendanceDate').value;
             
-            if (!selectedClass || !selectedDate) {
+            if (!selectedClassId || !selectedDate) {
                 alert('Please select both class and date');
                 return;
             }
 
             try {
-                const students = await getStudents();
-                const classStudents = students.filter(s => s.class === selectedClass);
+                const { data: students, error } = await supabase
+                    .from('students')
+                    .select('id, admission_no, name_with_initials')
+                    .eq('class_id', selectedClassId)
+                    .order('admission_no');
+
+                if (error) throw error;
                 
-                if (classStudents.length === 0) {
+                if (students.length === 0) {
                     alert('No students found in this class');
                     return;
                 }
 
+                // Check if attendance already exists for this date
+                const { data: existingAttendance, error: attendanceError } = await supabase
+                    .from('attendance')
+                    .select('student_id, status')
+                    .eq('date', selectedDate)
+                    .in('student_id', students.map(s => s.id));
+
+                if (attendanceError) throw attendanceError;
+
+                // Create a map of existing attendance
+                const attendanceMap = {};
+                existingAttendance.forEach(att => {
+                    attendanceMap[att.student_id] = att.status;
+                });
+
                 const tbody = document.getElementById('attendanceTableBody');
-                tbody.innerHTML = classStudents.map(student => `
+                tbody.innerHTML = students.map(student => {
+                    const existingStatus = attendanceMap[student.id];
+                    const isPresent = existingStatus === undefined ? true : existingStatus;
+                    const isAbsent = existingStatus === undefined ? false : !existingStatus;
+                    
+                    return `
                     <tr>
-                        <td>${student.admission_no}</td>
-                        <td>${student.name}</td>
-                        <td>
-                            <label>
-                                <input type="radio" name="attendance_${student.id}" value="present" checked>
+                        <td style="text-align: center;">${student.admission_no}</td>
+                        <td style="text-align: center;">${student.name_with_initials}</td>
+                        <td style="text-align: center;">
+                            <label style="margin-right: 15px;">
+                                <input type="radio" name="attendance_${student.id}" value="present" ${isPresent ? 'checked' : ''}>
                                 Present
                             </label>
-                            <label style="margin-left: 15px;">
-                                <input type="radio" name="attendance_${student.id}" value="absent">
+                            <label>
+                                <input type="radio" name="attendance_${student.id}" value="absent" ${isAbsent ? 'checked' : ''}>
                                 Absent
                             </label>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
 
                 document.getElementById('attendanceCard').style.display = 'block';
+                
+                // Show appropriate button and status
+                if (existingAttendance.length > 0) {
+                    document.getElementById('submitBtn').style.display = 'none';
+                    document.getElementById('updateBtn').style.display = 'inline-block';
+                    document.getElementById('attendanceStatus').textContent = '✓ Attendance already marked for this date';
+                } else {
+                    document.getElementById('submitBtn').style.display = 'inline-block';
+                    document.getElementById('updateBtn').style.display = 'none';
+                    document.getElementById('attendanceStatus').textContent = '';
+                }
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students');
+                alert('Error loading students: ' + error.message);
             }
         }
 
         // Submit attendance
         async function submitAttendance() {
+            const selectedClassId = document.getElementById('classSelect').value;
             const selectedDate = document.getElementById('attendanceDate').value;
-            const students = await getStudents();
-            const selectedClass = document.getElementById('classSelect').value;
-            const classStudents = students.filter(s => s.class === selectedClass);
+
+            if (!selectedClassId || !selectedDate) {
+                alert('Please select both class and date');
+                return;
+            }
 
             try {
-                for (const student of classStudents) {
-                    const status = document.querySelector(`input[name="attendance_${student.id}"]:checked`).value;
-                    const isPresent = status === 'present';
-                    
-                    await markAttendance({
+                // Get all students in the class
+                const { data: students, error: studentsError } = await supabase
+                    .from('students')
+                    .select('id')
+                    .eq('class_id', selectedClassId);
+
+                if (studentsError) throw studentsError;
+
+                // Prepare attendance records
+                const attendanceRecords = students.map(student => {
+                    const statusValue = document.querySelector(`input[name="attendance_${student.id}"]:checked`).value;
+                    return {
                         student_id: student.id,
                         date: selectedDate,
-                        status: isPresent,
-                        marked_by: 'teacher-id-placeholder' // In real app, get from auth
-                    });
-                }
+                        status: statusValue === 'present',
+                        marked_by: CURRENT_TEACHER_ID
+                    };
+                });
+
+                // Delete existing attendance for this date and these students
+                const { error: deleteError } = await supabase
+                    .from('attendance')
+                    .delete()
+                    .eq('date', selectedDate)
+                    .in('student_id', students.map(s => s.id));
+
+                if (deleteError) throw deleteError;
+
+                // Insert new attendance records
+                const { error: insertError } = await supabase
+                    .from('attendance')
+                    .insert(attendanceRecords);
+
+                if (insertError) throw insertError;
 
                 alert('Attendance marked successfully!');
-                document.getElementById('attendanceCard').style.display = 'none';
-                document.getElementById('classSelect').value = '';
+                
+                // Update UI to show it's now editable
+                document.getElementById('submitBtn').style.display = 'none';
+                document.getElementById('updateBtn').style.display = 'inline-block';
+                document.getElementById('attendanceStatus').textContent = '✓ Attendance marked successfully';
             } catch (error) {
                 console.error('Error submitting attendance:', error);
-                alert('Error submitting attendance');
+                alert('Error submitting attendance: ' + error.message);
+            }
+        }
+
+        // Update existing attendance
+        async function updateAttendance() {
+            const selectedClassId = document.getElementById('classSelect').value;
+            const selectedDate = document.getElementById('attendanceDate').value;
+
+            if (!selectedClassId || !selectedDate) {
+                alert('Please select both class and date');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to update the attendance for this date?')) {
+                return;
+            }
+
+            try {
+                // Get all students in the class
+                const { data: students, error: studentsError } = await supabase
+                    .from('students')
+                    .select('id')
+                    .eq('class_id', selectedClassId);
+
+                if (studentsError) throw studentsError;
+
+                // Prepare attendance records
+                const attendanceRecords = students.map(student => {
+                    const statusValue = document.querySelector(`input[name="attendance_${student.id}"]:checked`).value;
+                    return {
+                        student_id: student.id,
+                        date: selectedDate,
+                        status: statusValue === 'present',
+                        marked_by: CURRENT_TEACHER_ID
+                    };
+                });
+
+                // Delete existing attendance for this date and these students
+                const { error: deleteError } = await supabase
+                    .from('attendance')
+                    .delete()
+                    .eq('date', selectedDate)
+                    .in('student_id', students.map(s => s.id));
+
+                if (deleteError) throw deleteError;
+
+                // Insert updated attendance records
+                const { error: insertError } = await supabase
+                    .from('attendance')
+                    .insert(attendanceRecords);
+
+                if (insertError) throw insertError;
+
+                alert('Attendance updated successfully!');
+                document.getElementById('attendanceStatus').textContent = '✓ Attendance updated successfully';
+            } catch (error) {
+                console.error('Error updating attendance:', error);
+                alert('Error updating attendance: ' + error.message);
             }
         }
 

@@ -718,10 +718,113 @@ GROUP BY c.id, c.grade, c.class_letter, c.class_name,
 
 ---
 
+---
+
+### Session 6 - November 30, 2025
+
+#### **Completed Tasks**
+
+##### 1. Subject Registration System Integration
+
+- ✅ **Removed standalone Student Subjects section**:
+  - Removed "Student Subjects" navigation link from all 8 admin pages
+  - Consolidated functionality into Subjects page for better organization
+- ✅ **Integrated Subject Registration into Subjects page** (`admin/subjects.html`):
+  - Added "📝 Subject Registration" button next to "Add New Subject"
+  - **Subject Registration Modal**:
+    - Class filter dropdown
+    - Academic year selection
+    - Load students button
+    - Students table displaying: Admission No, Name, Grade, Assigned Subjects count, Actions
+  - **Assign Subjects to Student Modal**:
+    - Student information section (name, grade)
+    - Main subjects section (auto-assigned, gray background)
+    - General basket subjects (Grade 6-9, 2-column checkbox grid)
+    - O/L basket sections (Grade 10-11, three baskets with 2-column grids)
+  - **Complete JavaScript implementation**:
+    - `openSubjectRegistrationModal()` - Opens modal and loads classes
+    - `loadClassesForRegistration()` - Loads classes with grade data
+    - `loadSubjectsForRegistration()` - Loads all subjects
+    - `loadStudentsForRegistration()` - Loads students by class with existing assignments
+    - `displayRegistrationStudents()` - Displays students in table
+    - `openAssignSubjectsToStudentModal()` - Opens assignment modal for specific student
+    - `populateRegistrationSubjects()` - Shows main and basket subjects based on grade
+    - `generateRegistrationCheckboxes()` - Creates checkbox HTML for basket subjects
+    - Form submission handler for saving subject assignments
+  - **Database operations**:
+    - Loads existing assignments from `student_subjects` table
+    - Deletes old assignments before inserting new ones
+    - Combines main subjects (auto-assigned) with selected basket subjects
+
+##### 2. Admin Navigation Redesign
+
+- ✅ **Replaced Settings link with Settings icon** (⚙️):
+  - Removed text "Settings" link from navbar
+  - Added settings gear icon (⚙️) with dropdown modal
+  - **Settings Dropdown Modal** contains:
+    - **School Timings**: Start time and end time dropdowns
+    - **Theme Settings**: Light/Dark theme selector with save and reset
+    - **Academic Year**: Current academic year and school name inputs
+  - Modal appears on click, positioned at top-right (fixed position)
+  - Settings saved to localStorage and persist across sessions
+  
+- ✅ **Added Notification System** (🔔):
+  - Added notification bell icon (🔔) to navbar
+  - **Unread notification count badge**:
+    - Red circular badge on bell icon
+    - Displays count (1-9) or "9+" for 10+ notifications
+    - Hidden when no unread notifications
+  - **Notifications Dropdown Modal**:
+    - Shows all pending marks submissions as notifications
+    - Each notification displays: Title, message, time ago
+    - Different styling for read/unread notifications:
+      - Unread: Blue background (#e3f2fd) with green dot indicator
+      - Read: Gray background (#f9f9f9) without indicator
+    - Click notification to navigate to marks-approval page and mark as read
+    - "Mark all as read" button at top
+  - **Real-time updates**:
+    - Automatically loads notifications from Supabase
+    - Queries `marks` table for pending submissions with student/teacher/subject details
+    - Refreshes every 30 seconds automatically
+    - Read status stored in localStorage
+  
+- ✅ **Created shared navbar functionality** (`admin-navbar.js`):
+  - Single JavaScript file for all settings and notifications logic
+  - Automatically injects modal HTML into each page on load
+  - Included in all admin pages: dashboard, students, teachers, classes, subjects, marks-approval, timetable
+  - Dropdown modals close when clicking outside
+  - Functions: `toggleSettings()`, `toggleNotifications()`, `loadSettings()`, `loadNotifications()`, `saveTimings()`, `saveTheme()`, `saveAcademicSettings()`, `markAllAsRead()`, `updateNotificationBadge()`
+
+##### 3. Updated Navigation on All Admin Pages
+
+- ✅ **Updated navbar structure** on all 7 admin pages:
+  - Dashboard, Students, Teachers, Classes, Subjects, Marks Approval, Timetable
+  - Removed "Student Subjects" link
+  - Removed "Settings" text link
+  - Added notification bell icon with badge container
+  - Added settings gear icon
+  - Maintained Logout link at the end
+  - Added `admin-navbar.js` script reference to all pages
+
+#### **Summary of Session 6**
+
+- **Focus**: Navigation consolidation, notification system, and UI modernization
+- **Key Improvements**:
+  - Streamlined navigation by removing redundant "Student Subjects" page
+  - Integrated subject registration directly into Subjects page with full modal workflow
+  - Replaced text-based settings link with icon-based dropdown for cleaner UI
+  - Implemented real-time notification system with unread count badge
+  - Created reusable shared navbar functionality for consistent behavior across all admin pages
+  - Improved admin workflow with quick-access dropdowns for settings and notifications
+- **Status**: Admin portal now has modern icon-based navigation, real-time notifications, and consolidated subject management
+
+---
+
 ## Next Steps (See TODO.md for detailed list)
 
 1. **Authentication System**: Implement login to identify teachers and admins separately
-2. **Student-Subject Assignment**: Create interface to assign subjects to students
-3. **Marks Entry & Approval**: Build marks submission system with admin approval workflow
-4. **Notification System**: Add notifications for marks approval, admin feedback
-5. **Reports & Analytics**: Generate performance reports, attendance summaries
+2. **Student Portal**: Create student portal for viewing marks, attendance, timetable
+3. **Advanced Reporting**: Generate detailed performance reports and analytics
+4. **Email/SMS Notifications**: Integrate email/SMS for important notifications
+5. **Mobile Responsiveness**: Optimize UI for mobile devices
+

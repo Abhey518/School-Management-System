@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marks Approval - Admin Portal</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
+    <style>
+        .container { max-width: 1400px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="marks-approval.html" class="active">Marks Approval</a>
+            <a href="timetable.html">Timetable</a>
+            <div style="position: relative; display: inline-block;">
+                <a href="#" onclick="toggleNotifications(event)" style="position: relative; padding: 0.5rem 0.75rem;">
+                    🔔
+                    <span id="notificationBadge" style="display: none; position: absolute; top: 0; right: 0; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; text-align: center; line-height: 18px; font-weight: bold;"></span>
+                </a>
+            </div>
+            <a href="#" onclick="toggleSettings(event)">⚙️</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Marks Approval</h1>
+        <p class="subtitle">Review and approve marks submitted by teachers</p>
+        
+        <div class="card">
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid var(--border-color);">
+                <button style="padding: 12px 24px; background: none; border: none; border-bottom: 3px solid var(--primary-color); cursor: pointer; font-size: 16px; color: var(--primary-color); font-weight: 600; transition: all 0.3s;" 
+                        onclick="switchTab('pending', this)">
+                    Pending Approval (<span id="pendingCount">0</span>)
+                </button>
+                <button style="padding: 12px 24px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 16px; color: var(--text-color); transition: all 0.3s;" 
+                        onclick="switchTab('approved', this)">
+                    Approved
+                </button>
+                <button style="padding: 12px 24px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 16px; color: var(--text-color); transition: all 0.3s;" 
+                        onclick="switchTab('recheck', this)">
+                    Recheck Required
+                </button>
+            </div>
+            
+            <!-- Pending Submissions -->
+            <div id="pendingSection">
+                <div id="pendingContainer">
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📋</div>
+                        <p>No pending submissions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Approved Submissions -->
+            <div id="approvedSection" style="display: none;">
+                <div id="approvedContainer">
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+                        <p>No approved submissions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recheck Required -->
+            <div id="recheckSection" style="display: none;">
+                <div id="recheckContainer">
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🔄</div>
+                        <p>No recheck requests</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div id="viewDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 900px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Submission Details</h2>
+                <button onclick="closeViewDetailsModal()" class="btn">Close</button>
+            </div>
+            
+            <div id="submissionDetails" style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                <!-- Details will be populated here -->
+            </div>
+            
+            <div style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; color: #2c5aa0; font-size: 16px;">Student Marks</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">Admission No</th>
+                                <th style="text-align: center;">Student Name</th>
+                                <th style="text-align: center;">Marks</th>
+                                <th style="text-align: center;">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marksDetailsTableBody">
+                            <!-- Marks will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="modalActions" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <!-- Actions will be populated based on status -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Recheck Reason Modal -->
+    <div id="recheckReasonModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 600px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Request Recheck</h2>
+                <button onclick="closeRecheckReasonModal()" class="btn">Close</button>
+            </div>
+            
+            <form id="recheckReasonForm">
+                <input type="hidden" id="recheckSubmissionIds">
+                
+                <div style="background: white; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="recheckReason" style="font-weight: 600; margin-bottom: 8px; display: block;">Reason for Recheck</label>
+                        <textarea id="recheckReason" rows="4" required 
+                                  placeholder="Please explain why this submission needs to be rechecked..." 
+                                  style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button type="button" class="btn" onclick="closeRecheckReasonModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="background: #dc3545;">Request Recheck</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="admin-navbar.js"></script>
+    <script>
+        // Initialize Supabase client
+        const supabase = getSupabaseClient();
+        
+        let currentTab = 'pending';
+        let currentSubmissionIds = [];
+
+        // Switch tabs
+        function switchTab(tab, element) {
+            currentTab = tab;
+            
+            // Update tab styles
+            document.querySelectorAll('[onclick^="switchTab"]').forEach(t => {
+                t.style.borderBottomColor = 'transparent';
+                t.style.color = 'var(--text-color)';
+                t.style.fontWeight = 'normal';
+            });
+            element.style.borderBottomColor = 'var(--primary-color)';
+            element.style.color = 'var(--primary-color)';
+            element.style.fontWeight = '600';
+            
+            // Show/hide sections
+            document.getElementById('pendingSection').style.display = tab === 'pending' ? 'block' : 'none';
+            document.getElementById('approvedSection').style.display = tab === 'approved' ? 'block' : 'none';
+            document.getElementById('recheckSection').style.display = tab === 'recheck' ? 'block' : 'none';
+            
+            // Load data
+            loadSubmissions();
+        }
+
+        // Load submissions based on current tab
+        async function loadSubmissions() {
+            try {
+                let status;
+                let containerId;
+                
+                if (currentTab === 'pending') {
+                    status = 'Pending';
+                    containerId = 'pendingContainer';
+                } else if (currentTab === 'approved') {
+                    status = 'Approved';
+                    containerId = 'approvedContainer';
+                } else {
+                    status = 'Recheck Required';
+                    containerId = 'recheckContainer';
+                }
+
+                const { data, error } = await supabase
+                    .from('student_marks_detailed')
+                    .select('*')
+                    .eq('approval_status', status)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Group by class, subject, exam, and teacher
+                const grouped = {};
+                data.forEach(mark => {
+                    const key = `${mark.class_id}_${mark.subject_id}_${mark.exam_name}_${mark.entered_by}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            class_id: mark.class_id,
+                            class_name: mark.class_name,
+                            subject_id: mark.subject_id,
+                            subject_name: mark.subject_name,
+                            exam_name: mark.exam_name,
+                            entered_by: mark.entered_by,
+                            entered_by_teacher: mark.entered_by_teacher,
+                            approval_status: mark.approval_status,
+                            created_at: mark.created_at,
+                            updated_at: mark.updated_at,
+                            recheck_reason: mark.recheck_reason,
+                            approved_at: mark.approved_at,
+                            approved_by_name: mark.approved_by_name,
+                            marks: [],
+                            total_marks: 0,
+                            avg_marks: 0,
+                            count: 0
+                        };
+                    }
+                    grouped[key].marks.push(mark);
+                    grouped[key].total_marks += mark.marks;
+                    grouped[key].count++;
+                });
+
+                // Calculate averages
+                Object.values(grouped).forEach(submission => {
+                    submission.avg_marks = (submission.total_marks / submission.count).toFixed(2);
+                });
+
+                const submissions = Object.values(grouped);
+                
+                // Update pending count
+                if (currentTab === 'pending') {
+                    document.getElementById('pendingCount').textContent = submissions.length;
+                }
+
+                displaySubmissions(submissions, containerId);
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+                alert('Error loading submissions: ' + error.message);
+            }
+        }
+
+        // Display submissions
+        function displaySubmissions(submissions, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (submissions.length === 0) {
+                let icon, message;
+                if (currentTab === 'pending') {
+                    icon = '📋';
+                    message = 'No pending submissions';
+                } else if (currentTab === 'approved') {
+                    icon = '✅';
+                    message = 'No approved submissions';
+                } else {
+                    icon = '🔄';
+                    message = 'No recheck requests';
+                }
+                
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 48px; margin-bottom: 15px;">${icon}</div>
+                        <p>${message}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = submissions.map(submission => {
+                const date = new Date(submission.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const statusClass = submission.approval_status.toLowerCase().replace(' ', '-');
+                
+                let statusBadge = '';
+                if (submission.approval_status === 'Pending') {
+                    statusBadge = '<span style="padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #fff3cd; color: #856404;">Pending Approval</span>';
+                } else if (submission.approval_status === 'Approved') {
+                    statusBadge = '<span style="padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #d4edda; color: #155724;">Approved</span>';
+                } else {
+                    statusBadge = '<span style="padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #f8d7da; color: #721c24;">Recheck Required</span>';
+                }
+
+                const marksIds = submission.marks.map(m => m.id).join(',');
+
+                const borderColor = submission.approval_status === 'Approved' ? '#28a745' : 
+                                  submission.approval_status === 'Recheck Required' ? '#dc3545' : '#ffc107';
+                
+                return `
+                    <div style="background: var(--card-background); padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid ${borderColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div style="font-size: 18px; font-weight: 600;">
+                                ${submission.class_name} - ${submission.subject_name}
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 14px;">
+                                <div style="font-weight: 500; color: var(--text-muted); margin-bottom: 3px;">Exam</div>
+                                <div>${submission.exam_name}</div>
+                            </div>
+                            <div style="font-size: 14px;">
+                                <div style="font-weight: 500; color: var(--text-muted); margin-bottom: 3px;">Teacher</div>
+                                <div>${submission.entered_by_teacher}</div>
+                            </div>
+                            <div style="font-size: 14px;">
+                                <div style="font-weight: 500; color: var(--text-muted); margin-bottom: 3px;">Submitted</div>
+                                <div>${date}</div>
+                            </div>
+                            ${submission.approved_at ? `
+                            <div style="font-size: 14px;">
+                                <div style="font-weight: 500; color: var(--text-muted); margin-bottom: 3px;">Approved By</div>
+                                <div>${submission.approved_by_name || 'Admin'}</div>
+                            </div>
+                            ` : '<div></div>'}
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                            <div style="padding: 10px 20px; background: var(--hover-bg); border-radius: 6px;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary-color);">${submission.count}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Students</div>
+                            </div>
+                            <div style="padding: 10px 20px; background: var(--hover-bg); border-radius: 6px;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary-color);">${submission.avg_marks}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Average Marks</div>
+                            </div>
+                        </div>
+                        
+                        ${submission.recheck_reason ? `
+                        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                            <strong>Recheck Reason:</strong> ${submission.recheck_reason}
+                        </div>
+                        ` : ''}
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" onclick="viewSubmissionDetails('${marksIds}')">
+                                View Details
+                            </button>
+                            ${submission.approval_status === 'Pending' ? `
+                            <button class="btn btn-primary" style="background: #28a745;" onclick="approveSubmission('${marksIds}')">
+                                ✓ Approve
+                            </button>
+                            <button class="btn btn-primary" style="background: #dc3545;" onclick="openRecheckReasonModal('${marksIds}')">
+                                Request Recheck
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // View submission details
+        async function viewSubmissionDetails(marksIdsString) {
+            const marksIds = marksIdsString.split(',');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('student_marks_detailed')
+                    .select('*')
+                    .in('id', marksIds)
+                    .order('admission_no');
+
+                if (error) throw error;
+
+                const submission = data[0];
+                
+                document.getElementById('submissionDetails').innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div>
+                            <strong>Class:</strong> ${submission.class_name}<br>
+                            <strong>Subject:</strong> ${submission.subject_name}<br>
+                            <strong>Exam:</strong> ${submission.exam_name}
+                        </div>
+                        <div>
+                            <strong>Teacher:</strong> ${submission.entered_by_teacher}<br>
+                            <strong>Status:</strong> ${submission.approval_status}<br>
+                            <strong>Submitted:</strong> ${new Date(submission.created_at).toLocaleString()}
+                        </div>
+                    </div>
+                `;
+
+                const tbody = document.getElementById('marksDetailsTableBody');
+                tbody.innerHTML = data.map(mark => `
+                    <tr>
+                        <td>${mark.admission_no}</td>
+                        <td>${mark.student_name}</td>
+                        <td>${mark.marks}</td>
+                        <td>${mark.grade}</td>
+                    </tr>
+                `).join('');
+
+                const modalActions = document.getElementById('modalActions');
+                if (submission.approval_status === 'Pending') {
+                    modalActions.innerHTML = `
+                        <button class="btn" onclick="closeViewDetailsModal()">Close</button>
+                        <button class="btn btn-primary" style="background: #28a745;" onclick="approveSubmission('${marksIdsString}'); closeViewDetailsModal();">
+                            Approve
+                        </button>
+                        <button class="btn btn-primary" style="background: #dc3545;" onclick="openRecheckReasonModal('${marksIdsString}'); closeViewDetailsModal();">
+                            Request Recheck
+                        </button>
+                    `;
+                } else {
+                    modalActions.innerHTML = `
+                        <button class="btn" onclick="closeViewDetailsModal()">Close</button>
+                    `;
+                }
+
+                document.getElementById('viewDetailsModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading details:', error);
+                alert('Error loading details: ' + error.message);
+            }
+        }
+
+        // Close view details modal
+        function closeViewDetailsModal() {
+            document.getElementById('viewDetailsModal').style.display = 'none';
+        }
+
+        // Approve submission
+        async function approveSubmission(marksIdsString) {
+            if (!confirm('Are you sure you want to approve this submission?')) {
+                return;
+            }
+
+            const marksIds = marksIdsString.split(',');
+            
+            try {
+                const { error } = await supabase
+                    .from('marks')
+                    .update({
+                        approval_status: 'Approved',
+                        approved_at: new Date().toISOString()
+                        // approved_by would be set from authentication
+                    })
+                    .in('id', marksIds);
+
+                if (error) throw error;
+
+                // TODO: Create notification for teacher
+                
+                alert('Marks approved successfully!');
+                loadSubmissions();
+            } catch (error) {
+                console.error('Error approving marks:', error);
+                alert('Error approving marks: ' + error.message);
+            }
+        }
+
+        // Open recheck reason modal
+        function openRecheckReasonModal(marksIdsString) {
+            document.getElementById('recheckSubmissionIds').value = marksIdsString;
+            document.getElementById('recheckReason').value = '';
+            document.getElementById('recheckReasonModal').style.display = 'block';
+        }
+
+        // Close recheck reason modal
+        function closeRecheckReasonModal() {
+            document.getElementById('recheckReasonModal').style.display = 'none';
+        }
+
+        // Handle recheck reason form submission
+        document.getElementById('recheckReasonForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const marksIdsString = document.getElementById('recheckSubmissionIds').value;
+            const reason = document.getElementById('recheckReason').value;
+            const marksIds = marksIdsString.split(',');
+
+            try {
+                const { error } = await supabase
+                    .from('marks')
+                    .update({
+                        approval_status: 'Recheck Required',
+                        recheck_reason: reason
+                    })
+                    .in('id', marksIds);
+
+                if (error) throw error;
+
+                // TODO: Create notification for teacher
+
+                alert('Recheck request sent to teacher!');
+                closeRecheckReasonModal();
+                loadSubmissions();
+            } catch (error) {
+                console.error('Error requesting recheck:', error);
+                alert('Error requesting recheck: ' + error.message);
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const detailsModal = document.getElementById('viewDetailsModal');
+            const recheckModal = document.getElementById('recheckReasonModal');
+            
+            if (event.target === detailsModal) {
+                closeViewDetailsModal();
+            }
+            if (event.target === recheckModal) {
+                closeRecheckReasonModal();
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubmissions();
+        });
+    </script>
+</body>
+</html>

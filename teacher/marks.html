@@ -3,11 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Marks - SMS</title>
+    <title>Marks Entry - Teacher Portal</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
+        
+        .marks-header {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .marks-header h2 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+        }
+        
+        .marks-header p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        
+        .marks-table {
+            margin-top: 20px;
+        }
+        
+        .marks-table th:nth-child(1) { width: 15%; }
+        .marks-table th:nth-child(2) { width: 35%; }
+        .marks-table th:nth-child(3) { width: 15%; }
+        .marks-table th:nth-child(4) { width: 15%; }
+        .marks-table th:nth-child(5) { width: 20%; }
+        
+        .marks-input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-recheck {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .submission-history {
+            margin-top: 40px;
+        }
+        
+        .history-card {
+            background: var(--card-background);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .history-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .history-card.approved {
+            border-left-color: #28a745;
+        }
+        
+        .history-card.recheck {
+            border-left-color: #dc3545;
+        }
+        
+        .history-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .history-card-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .history-card-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .info-item {
+            font-size: 14px;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        
+        .recheck-notice {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -23,69 +153,85 @@
     </nav>
 
     <div class="container">
-        <h1>Enter Marks</h1>
+        <h1>Marks Entry & Submission</h1>
+        <p class="subtitle">Enter marks for students and submit for admin approval</p>
         
+        <!-- Marks Entry Form -->
         <div class="card">
-            <h2>Select Exam Details</h2>
-            <div class="form-group">
-                <label>Class</label>
-                <select id="classSelect">
-                    <option value="">Select a class</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Subject</label>
-                <input type="text" id="subjectInput" placeholder="e.g., Mathematics">
-            </div>
-            <div class="form-group">
-                <label>Exam Name</label>
-                <input type="text" id="examInput" placeholder="e.g., Mid-Term, Final">
-            </div>
-            <button onclick="loadStudentsForMarks()" class="btn btn-primary">Load Students</button>
-        </div>
-
-        <div class="card" id="marksCard" style="display: none;">
             <h2>Enter Marks</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Admission No</th>
-                            <th>Student Name</th>
-                            <th>Marks (out of 100)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="marksTableBody">
-                    </tbody>
-                </table>
-            </div>
-            <button onclick="submitMarks()" class="btn btn-primary" style="margin-top: 20px;">Submit Marks</button>
-        </div>
-
-        <div class="card">
-            <h2>View Marks</h2>
-            <div class="form-group">
-                <label>Select Student</label>
-                <select id="studentSelect">
-                    <option value="">Select a student</option>
-                </select>
-            </div>
-            <button onclick="viewStudentMarks()" class="btn btn-primary">View Marks</button>
             
-            <div id="studentMarksDisplay" style="margin-top: 20px; display: none;">
-                <h3>Marks Record</h3>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Exam</th>
-                                <th>Marks</th>
-                            </tr>
-                        </thead>
-                        <tbody id="studentMarksBody">
-                        </tbody>
-                    </table>
+            <div class="filter-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="selectClass">Select Class</label>
+                    <select id="selectClass" onchange="loadSubjectsForClass()">
+                        <option value="">Select Class</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectSubject">Select Subject</label>
+                    <select id="selectSubject" disabled>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectExam">Exam</label>
+                    <select id="selectExam">
+                        <option value="">Select Exam</option>
+                        <option value="First Term">First Term</option>
+                        <option value="Second Term">Second Term</option>
+                        <option value="Third Term">Third Term</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary" onclick="loadStudentsForMarks()" style="width: 100%;">Load Students</button>
+                </div>
+            </div>
+            
+            <div id="marksEntrySection" style="display: none;">
+                <div class="marks-header">
+                    <h2 id="marksFormTitle">Marks Entry</h2>
+                    <p><strong>Class:</strong> <span id="displayClass"></span></p>
+                    <p><strong>Subject:</strong> <span id="displaySubject"></span></p>
+                    <p><strong>Exam:</strong> <span id="displayExam"></span></p>
+                </div>
+                
+                <form id="marksEntryForm">
+                    <div class="table-responsive">
+                        <table class="data-table marks-table">
+                            <thead>
+                                <tr>
+                                    <th>Admission No</th>
+                                    <th>Student Name</th>
+                                    <th>Current Marks</th>
+                                    <th>Enter Marks</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="marksTableBody">
+                                <!-- Students will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn" onclick="resetMarksForm()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit for Approval</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Submission History -->
+        <div class="card">
+            <h2>Submission History</h2>
+            <div id="submissionHistoryContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <p>No submissions yet</p>
                 </div>
             </div>
         </div>
@@ -94,142 +240,416 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
-    <script src="teacher.js"></script>
     <script>
-        // Load classes and students for dropdowns
-        async function loadDropdowns() {
+        // Initialize Supabase client
+        const supabase = getSupabaseClient();
+        
+        // For demo purposes - in production this would come from authentication
+        const CURRENT_TEACHER_ID = '123e4567-e89b-12d3-a456-426614174000'; // Replace with actual teacher ID from auth
+        
+        let currentClassId = null;
+        let currentSubjectId = null;
+        let currentExamName = null;
+        let studentsData = [];
+
+        // Load classes where teacher teaches
+        async function loadTeacherClasses() {
             try {
-                const classes = await getClasses();
-                const classSelect = document.getElementById('classSelect');
+                // Get classes where this teacher has been assigned through timetable
+                const { data, error } = await supabase
+                    .from('timetable')
+                    .select(`
+                        class_id,
+                        classes (
+                            id,
+                            class_name,
+                            grade
+                        )
+                    `)
+                    .eq('teacher_id', CURRENT_TEACHER_ID)
+                    .not('classes', 'is', null);
+
+                if (error) throw error;
+
+                // Get unique classes
+                const uniqueClasses = [];
+                const classIds = new Set();
                 
-                classes.forEach(cls => {
-                    const option = document.createElement('option');
-                    option.value = cls.name;
-                    option.textContent = cls.name;
-                    classSelect.appendChild(option);
+                data.forEach(item => {
+                    if (item.classes && !classIds.has(item.classes.id)) {
+                        classIds.add(item.classes.id);
+                        uniqueClasses.push(item.classes);
+                    }
                 });
 
-                const students = await getStudents();
-                const studentSelect = document.getElementById('studentSelect');
+                const select = document.getElementById('selectClass');
+                select.innerHTML = '<option value="">Select Class</option>';
                 
-                students.forEach(student => {
+                uniqueClasses.sort((a, b) => {
+                    if (a.grade !== b.grade) return a.grade - b.grade;
+                    return a.class_name.localeCompare(b.class_name);
+                }).forEach(cls => {
                     const option = document.createElement('option');
-                    option.value = student.id;
-                    option.textContent = `${student.name} (${student.admission_no})`;
-                    studentSelect.appendChild(option);
+                    option.value = cls.id;
+                    option.textContent = cls.class_name;
+                    option.dataset.grade = cls.grade;
+                    select.appendChild(option);
                 });
             } catch (error) {
-                console.error('Error loading dropdowns:', error);
+                console.error('Error loading classes:', error);
+                alert('Error loading classes: ' + error.message);
+            }
+        }
+
+        // Load subjects for selected class
+        async function loadSubjectsForClass() {
+            const classSelect = document.getElementById('selectClass');
+            const subjectSelect = document.getElementById('selectSubject');
+            
+            if (!classSelect.value) {
+                subjectSelect.disabled = true;
+                subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                return;
+            }
+
+            try {
+                // Get subjects taught by this teacher in this class
+                const { data, error } = await supabase
+                    .from('timetable')
+                    .select(`
+                        subject_id,
+                        subjects (
+                            id,
+                            subject_name,
+                            subject_code
+                        )
+                    `)
+                    .eq('class_id', classSelect.value)
+                    .eq('teacher_id', CURRENT_TEACHER_ID)
+                    .not('subject_id', 'is', null);
+
+                if (error) throw error;
+
+                // Get unique subjects
+                const uniqueSubjects = [];
+                const subjectIds = new Set();
+                
+                data.forEach(item => {
+                    if (item.subjects && !subjectIds.has(item.subjects.id)) {
+                        subjectIds.add(item.subjects.id);
+                        uniqueSubjects.push(item.subjects);
+                    }
+                });
+
+                subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                uniqueSubjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = subject.subject_name;
+                    subjectSelect.appendChild(option);
+                });
+                
+                subjectSelect.disabled = false;
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+                alert('Error loading subjects: ' + error.message);
             }
         }
 
         // Load students for marks entry
         async function loadStudentsForMarks() {
-            const selectedClass = document.getElementById('classSelect').value;
-            const subject = document.getElementById('subjectInput').value;
-            const exam = document.getElementById('examInput').value;
-            
-            if (!selectedClass || !subject || !exam) {
-                alert('Please fill all fields');
+            const classId = document.getElementById('selectClass').value;
+            const subjectId = document.getElementById('selectSubject').value;
+            const examName = document.getElementById('selectExam').value;
+
+            if (!classId || !subjectId || !examName) {
+                alert('Please select Class, Subject, and Exam');
                 return;
             }
 
             try {
-                const students = await getStudents();
-                const classStudents = students.filter(s => s.class === selectedClass);
+                // Store current selection
+                currentClassId = classId;
+                currentSubjectId = subjectId;
+                currentExamName = examName;
+
+                const classSelect = document.getElementById('selectClass');
+                const subjectSelect = document.getElementById('selectSubject');
+
+                // Update display
+                document.getElementById('displayClass').textContent = classSelect.options[classSelect.selectedIndex].text;
+                document.getElementById('displaySubject').textContent = subjectSelect.options[subjectSelect.selectedIndex].text;
+                document.getElementById('displayExam').textContent = examName;
+
+                // Get all students in the class
+                const { data: students, error: studentsError } = await supabase
+                    .from('students')
+                    .select('id, admission_no, name_with_initials')
+                    .eq('class_id', classId)
+                    .order('admission_no');
+
+                if (studentsError) throw studentsError;
+
+                // Get existing marks for these students
+                const { data: existingMarks, error: marksError } = await supabase
+                    .from('marks')
+                    .select('*')
+                    .eq('class_id', classId)
+                    .eq('subject_id', subjectId)
+                    .eq('exam_name', examName)
+                    .in('student_id', students.map(s => s.id));
+
+                if (marksError) throw marksError;
+
+                // Create a map of existing marks
+                const marksMap = {};
+                existingMarks.forEach(mark => {
+                    marksMap[mark.student_id] = mark;
+                });
+
+                // Combine data
+                studentsData = students.map(student => ({
+                    ...student,
+                    existingMark: marksMap[student.id] || null
+                }));
+
+                displayMarksTable();
+                document.getElementById('marksEntrySection').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading students:', error);
+                alert('Error loading students: ' + error.message);
+            }
+        }
+
+        // Display marks table
+        function displayMarksTable() {
+            const tbody = document.getElementById('marksTableBody');
+            
+            tbody.innerHTML = studentsData.map(student => {
+                const existingMark = student.existingMark;
+                const isEditable = !existingMark || existingMark.approval_status === 'Recheck Required';
+                const currentMarks = existingMark ? existingMark.marks : '-';
+                const status = existingMark ? existingMark.approval_status : '-';
                 
-                if (classStudents.length === 0) {
-                    alert('No students found in this class');
+                let statusBadge = '';
+                if (existingMark) {
+                    if (existingMark.approval_status === 'Pending') {
+                        statusBadge = '<span class="status-badge status-pending">Pending</span>';
+                    } else if (existingMark.approval_status === 'Approved') {
+                        statusBadge = '<span class="status-badge status-approved">Approved</span>';
+                    } else if (existingMark.approval_status === 'Recheck Required') {
+                        statusBadge = '<span class="status-badge status-recheck">Recheck Required</span>';
+                    }
+                }
+                
+                return `
+                    <tr>
+                        <td>${student.admission_no}</td>
+                        <td>${student.name_with_initials}</td>
+                        <td>${currentMarks}</td>
+                        <td>
+                            <input type="number" 
+                                   class="marks-input" 
+                                   name="marks_${student.id}" 
+                                   min="0" 
+                                   max="100" 
+                                   step="1"
+                                   value="${existingMark && isEditable ? existingMark.marks : ''}"
+                                   ${!isEditable ? 'disabled' : ''}
+                                   placeholder="0-100">
+                        </td>
+                        <td>${statusBadge || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Handle form submission
+        document.getElementById('marksEntryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const marksToSubmit = [];
+            let hasErrors = false;
+
+            studentsData.forEach(student => {
+                const input = document.querySelector(`input[name="marks_${student.id}"]`);
+                if (!input.disabled && input.value.trim() !== '') {
+                    const marks = parseInt(input.value);
+                    
+                    if (marks < 0 || marks > 100) {
+                        alert(`Invalid marks for ${student.name_with_initials}. Marks must be between 0 and 100.`);
+                        hasErrors = true;
+                        return;
+                    }
+                    
+                    marksToSubmit.push({
+                        student_id: student.id,
+                        subject_id: currentSubjectId,
+                        class_id: currentClassId,
+                        exam_name: currentExamName,
+                        marks: marks,
+                        entered_by: CURRENT_TEACHER_ID,
+                        approval_status: 'Pending'
+                    });
+                }
+            });
+
+            if (hasErrors) return;
+
+            if (marksToSubmit.length === 0) {
+                alert('Please enter marks for at least one student');
+                return;
+            }
+
+            if (!confirm(`Submit marks for ${marksToSubmit.length} student(s) for approval?`)) {
+                return;
+            }
+
+            try {
+                // Delete existing pending/recheck marks for these students
+                const studentIds = marksToSubmit.map(m => m.student_id);
+                const { error: deleteError } = await supabase
+                    .from('marks')
+                    .delete()
+                    .eq('class_id', currentClassId)
+                    .eq('subject_id', currentSubjectId)
+                    .eq('exam_name', currentExamName)
+                    .in('student_id', studentIds)
+                    .in('approval_status', ['Pending', 'Recheck Required']);
+
+                if (deleteError) throw deleteError;
+
+                // Insert new marks
+                const { error: insertError } = await supabase
+                    .from('marks')
+                    .insert(marksToSubmit);
+
+                if (insertError) throw insertError;
+
+                // TODO: Create notifications for admin
+                // This will be implemented in the notifications section
+
+                alert('Marks submitted successfully! Waiting for admin approval.');
+                resetMarksForm();
+                loadSubmissionHistory();
+            } catch (error) {
+                console.error('Error submitting marks:', error);
+                alert('Error submitting marks: ' + error.message);
+            }
+        });
+
+        // Reset marks form
+        function resetMarksForm() {
+            document.getElementById('marksEntrySection').style.display = 'none';
+            document.getElementById('selectClass').value = '';
+            document.getElementById('selectSubject').value = '';
+            document.getElementById('selectSubject').disabled = true;
+            document.getElementById('selectExam').value = '';
+            studentsData = [];
+        }
+
+        // Load submission history
+        async function loadSubmissionHistory() {
+            try {
+                const { data, error } = await supabase
+                    .from('student_marks_detailed')
+                    .select('*')
+                    .eq('entered_by', CURRENT_TEACHER_ID)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                const container = document.getElementById('submissionHistoryContainer');
+                
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📊</div>
+                            <p>No submissions yet</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                const tbody = document.getElementById('marksTableBody');
-                tbody.innerHTML = classStudents.map(student => `
-                    <tr>
-                        <td>${student.admission_no}</td>
-                        <td>${student.name}</td>
-                        <td>
-                            <input type="number" id="marks_${student.id}" min="0" max="100" 
-                                   style="width: 100px; padding: 5px;">
-                        </td>
-                    </tr>
-                `).join('');
-
-                document.getElementById('marksCard').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading students:', error);
-                alert('Error loading students');
-            }
-        }
-
-        // Submit marks
-        async function submitMarks() {
-            const selectedClass = document.getElementById('classSelect').value;
-            const subject = document.getElementById('subjectInput').value;
-            const exam = document.getElementById('examInput').value;
-            const students = await getStudents();
-            const classStudents = students.filter(s => s.class === selectedClass);
-
-            try {
-                for (const student of classStudents) {
-                    const marksInput = document.getElementById(`marks_${student.id}`);
-                    const marks = parseInt(marksInput.value);
-                    
-                    if (marks >= 0 && marks <= 100) {
-                        await addMarks({
-                            student_id: student.id,
-                            subject: subject,
-                            exam: exam,
-                            marks: marks,
-                            entered_by: 'teacher-id-placeholder' // In real app, get from auth
-                        });
+                // Group by class, subject, exam
+                const grouped = {};
+                data.forEach(mark => {
+                    const key = `${mark.class_name}_${mark.subject_name}_${mark.exam_name}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            class_name: mark.class_name,
+                            subject_name: mark.subject_name,
+                            exam_name: mark.exam_name,
+                            approval_status: mark.approval_status,
+                            created_at: mark.created_at,
+                            updated_at: mark.updated_at,
+                            recheck_reason: mark.recheck_reason,
+                            count: 0
+                        };
                     }
-                }
+                    grouped[key].count++;
+                });
 
-                alert('Marks submitted successfully!');
-                document.getElementById('marksCard').style.display = 'none';
-                document.getElementById('classSelect').value = '';
-                document.getElementById('subjectInput').value = '';
-                document.getElementById('examInput').value = '';
+                container.innerHTML = Object.values(grouped).map(submission => {
+                    const statusClass = submission.approval_status.toLowerCase().replace(' ', '-');
+                    const date = new Date(submission.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    let statusBadge = '';
+                    if (submission.approval_status === 'Pending') {
+                        statusBadge = '<span class="status-badge status-pending">Pending Approval</span>';
+                    } else if (submission.approval_status === 'Approved') {
+                        statusBadge = '<span class="status-badge status-approved">Approved</span>';
+                    } else if (submission.approval_status === 'Recheck Required') {
+                        statusBadge = '<span class="status-badge status-recheck">Recheck Required</span>';
+                    }
+
+                    return `
+                        <div class="history-card ${statusClass}">
+                            <div class="history-card-header">
+                                <div class="history-card-title">
+                                    ${submission.class_name} - ${submission.subject_name}
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <div class="history-card-info">
+                                <div class="info-item">
+                                    <div class="info-label">Exam:</div>
+                                    <div>${submission.exam_name}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Students:</div>
+                                    <div>${submission.count} students</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Submitted:</div>
+                                    <div>${date}</div>
+                                </div>
+                            </div>
+                            ${submission.approval_status === 'Recheck Required' && submission.recheck_reason ? `
+                                <div class="recheck-notice">
+                                    <strong>Recheck Reason:</strong> ${submission.recheck_reason}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
-                console.error('Error submitting marks:', error);
-                alert('Error submitting marks');
+                console.error('Error loading submission history:', error);
             }
         }
 
-        // View student marks
-        async function viewStudentMarks() {
-            const studentId = document.getElementById('studentSelect').value;
-            
-            if (!studentId) {
-                alert('Please select a student');
-                return;
-            }
-
-            try {
-                const marks = await getMarksByStudent(studentId);
-                const tbody = document.getElementById('studentMarksBody');
-                
-                if (marks.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No marks found</td></tr>';
-                } else {
-                    tbody.innerHTML = marks.map(mark => `
-                        <tr>
-                            <td>${mark.subject}</td>
-                            <td>${mark.exam}</td>
-                            <td>${mark.marks}/100</td>
-                        </tr>
-                    `).join('');
-                }
-
-                document.getElementById('studentMarksDisplay').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading marks:', error);
-                alert('Error loading marks');
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', loadDropdowns);
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTeacherClasses();
+            loadSubmissionHistory();
+        });
     </script>
 </body>
 </html>
