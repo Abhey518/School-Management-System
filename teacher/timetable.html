@@ -6,6 +6,9 @@
     <title>My Timetable - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <style>
+        .container { max-width: 1400px; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -24,19 +27,27 @@
         
         <div class="card">
             <h2>Weekly Schedule</h2>
-            <div class="table-responsive">
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                <strong>School Hours:</strong> 7:30 AM - 1:30 PM | 
+                <strong>Period Duration:</strong> 40 minutes | 
+                <strong>Interval:</strong> 10:30 AM - 10:50 AM (20 minutes)
+            </p>
+            <div id="noTimetable" style="display: none; text-align: center; padding: 2rem; color: #666;">
+                <p>No timetable available. Please contact the administrator.</p>
+            </div>
+            <div class="table-responsive" id="timetableContainer">
                 <table class="timetable-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Monday</th>
-                            <th>Tuesday</th>
-                            <th>Wednesday</th>
-                            <th>Thursday</th>
-                            <th>Friday</th>
+                            <th style="text-align: center;">Time</th>
+                            <th style="text-align: center;">Monday</th>
+                            <th style="text-align: center;">Tuesday</th>
+                            <th style="text-align: center;">Wednesday</th>
+                            <th style="text-align: center;">Thursday</th>
+                            <th style="text-align: center;">Friday</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="timetableBody">
                         <tr>
                             <td>8:00 - 9:00</td>
                             <td>
@@ -148,19 +159,158 @@
     <script src="../shared/api.js"></script>
     <script src="teacher.js"></script>
     <script>
-        function markPeriodComplete(button) {
-            const period = button.parentElement;
+        let timetableData = [];
+        let teacherId = localStorage.getItem('teacherId'); // Assume teacher ID is stored on login
+        
+        // Format time to 12-hour AM/PM format
+        function formatTime(time24) {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+        
+        // Load teacher's timetable
+        async function loadTimetable() {
+            try {
+                const client = getSupabaseClient();
+                
+                console.log('Loading timetable for teacher ID:', teacherId);
+                
+                // Build query
+                let query = client
+                    .from('timetable')
+                    .select(`
+                        *,
+                        subjects(subject_name, subject_code),
+                        classes(class_name)
+                    `)
+                    .eq('is_break', false)
+                    .order('start_time', { ascending: true });
+                
+                // If teacher ID exists, filter by teacher
+                if (teacherId) {
+                    query = query.eq('teacher_id', teacherId);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                console.log('Loaded timetable data:', data);
+                
+                timetableData = data || [];
+                
+                if (timetableData.length === 0) {
+                    console.warn('No timetable entries found');
+                    document.getElementById('noTimetable').style.display = 'block';
+                    document.getElementById('timetableContainer').style.display = 'none';
+                } else {
+                    displayTimetable(timetableData);
+                }
+            } catch (error) {
+                console.error('Error loading timetable:', error);
+                document.getElementById('noTimetable').style.display = 'block';
+                document.getElementById('timetableContainer').style.display = 'none';
+            }
+        }
+        
+        // Display timetable with full schedule structure
+        function displayTimetable(data) {
+            const tbody = document.getElementById('timetableBody');
+            
+            // Define full day schedule: 8 periods (40 min each) + 1 interval
+            const fullSchedule = [
+                { start: '07:50:00', end: '08:30:00', label: 'Period 1' },
+                { start: '08:30:00', end: '09:10:00', label: 'Period 2' },
+                { start: '09:10:00', end: '09:50:00', label: 'Period 3' },
+                { start: '09:50:00', end: '10:30:00', label: 'Period 4' },
+                { start: '10:30:00', end: '10:50:00', label: 'Interval', isBreak: true },
+                { start: '10:50:00', end: '11:30:00', label: 'Period 5' },
+                { start: '11:30:00', end: '12:10:00', label: 'Period 6' },
+                { start: '12:10:00', end: '12:50:00', label: 'Period 7' },
+                { start: '12:50:00', end: '13:30:00', label: 'Period 8' }
+            ];
+            
+            // Group teacher's periods by time and day
+            const periodsByTime = {};
+            data.forEach(entry => {
+                const timeKey = `${entry.start_time}-${entry.end_time}`;
+                if (!periodsByTime[timeKey]) {
+                    periodsByTime[timeKey] = {};
+                }
+                periodsByTime[timeKey][entry.day_of_week] = entry;
+            });
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            tbody.innerHTML = fullSchedule.map(slot => {
+                const timeKey = `${slot.start}-${slot.end}`;
+                const timeDisplay = `${formatTime(slot.start)} - ${formatTime(slot.end)}`;
+                
+                // Interval row
+                if (slot.isBreak) {
+                    return `<tr>
+                        <td style="text-align: center; font-weight: 500;">${timeDisplay}</td>
+                        <td colspan="5" style="text-align: center; background: #f0f0f0; font-weight: 500; color: #666;">
+                            ${slot.label}
+                        </td>
+                    </tr>`;
+                }
+                
+                // Regular period row
+                const periods = periodsByTime[timeKey] || {};
+                
+                return `<tr>
+                    <td style="text-align: center; font-weight: 500;">${timeDisplay}</td>
+                    ${days.map(day => {
+                        const period = periods[day];
+                        if (period) {
+                            const subjectName = period.subjects?.subject_name || 'N/A';
+                            const className = period.classes?.class_name || 'N/A';
+                            return `<td style="text-align: center; padding: 0.5rem; background: #f9f9f9;">
+                                <div class="period" id="period-${period.id}">
+                                    <div style="font-weight: 500; color: #2c3e50;">${subjectName}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">${className}</div>
+                                    <button class="mark-complete-btn" onclick="markPeriodComplete('${period.id}', this)">✓</button>
+                                </div>
+                            </td>`;
+                        }
+                        return '<td style="text-align: center; color: #999;">-</td>';
+                    }).join('')}
+                </tr>`;
+            }).join('');
+            
+            document.getElementById('timetableContainer').style.display = 'block';
+            document.getElementById('noTimetable').style.display = 'none';
+        }
+        
+        // Mark period as complete
+        function markPeriodComplete(periodId, button) {
+            const period = document.getElementById('period-' + periodId);
             period.classList.toggle('completed');
             
             if (period.classList.contains('completed')) {
-                button.textContent = '✓';
                 button.style.background = '#4CAF50';
-                alert('Period marked as completed!');
-            } else {
                 button.textContent = '✓';
+                // You can add API call here to save completion status
+            } else {
                 button.style.background = '#2196F3';
+                button.textContent = '✓';
             }
         }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!teacherId) {
+                console.warn('No teacher ID found. Using mock data.');
+                // For testing without login, you can set a test teacher ID
+                // localStorage.setItem('teacherId', 'your-test-teacher-uuid');
+            }
+            await loadTimetable();
+        });
     </script>
 </body>
 </html>

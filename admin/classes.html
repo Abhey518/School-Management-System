@@ -6,6 +6,7 @@
     <title>Manage Classes - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -20,6 +21,7 @@
             <a href="classes.html" class="active">Classes</a>
             <a href="subjects.html">Subjects</a>
             <a href="timetable.html">Timetable</a>
+            <a href="settings.html">Settings</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -36,12 +38,12 @@
                 <table id="classesTable">
                     <thead>
                         <tr>
-                            <th>Class Name</th>
-                            <th>Class Teacher</th>
-                            <th>Vice Class Teacher</th>
-                            <th>Monitors</th>
-                            <th>Student Count</th>
-                            <th>Actions</th>
+                            <th style="text-align: center;">Class Name</th>
+                            <th style="text-align: center;">Class Teacher</th>
+                            <th style="text-align: center;">Vice Class Teacher</th>
+                            <th style="text-align: center;">Monitors</th>
+                            <th style="text-align: center;">Student Count</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="classesTableBody">
@@ -276,12 +278,12 @@
                     
                     return `
                         <tr>
-                            <td>${cls.class_name}</td>
-                            <td>${cls.class_teacher_name || 'Not Assigned'}</td>
-                            <td>${cls.vice_class_teacher_name || 'Not Assigned'}</td>
-                            <td>${monitors}</td>
-                            <td>${cls.student_count || 0}</td>
-                            <td>
+                            <td style="text-align: center;">${cls.class_name}</td>
+                            <td style="text-align: center;">${cls.class_teacher_name || 'Not Assigned'}</td>
+                            <td style="text-align: center;">${cls.vice_class_teacher_name || 'Not Assigned'}</td>
+                            <td style="text-align: center;">${monitors}</td>
+                            <td style="text-align: center;">${cls.student_count || 0}</td>
+                            <td style="text-align: center;">
                                 <button onclick="viewClassDetails('${cls.id}')" class="btn btn-small">View Details</button>
                                 <button onclick="openEditClassModal('${cls.id}')" class="btn btn-small btn-primary">Edit</button>
                             </td>

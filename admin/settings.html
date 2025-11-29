@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - SMS</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
+    <style>
+        .container { max-width: 1400px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="timetable.html">Timetable</a>
+            <a href="settings.html" class="active">Settings</a>
+            <a href="../index.html">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>School Settings</h1>
+        
+        <div class="card">
+            <h2>School Timings</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Configure the default school start and end times. These settings will affect timetable generation.</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; max-width: 600px;">
+                <div class="form-group">
+                    <label>School Start Time</label>
+                    <select id="schoolStartTime">
+                        <option value="07:30">7:30 AM</option>
+                        <option value="08:00" selected>8:00 AM</option>
+                    </select>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 8:00 AM</p>
+                </div>
+                <div class="form-group">
+                    <label>School End Time</label>
+                    <select id="schoolEndTime">
+                        <option value="13:30">1:30 PM</option>
+                        <option value="14:00" selected>2:00 PM</option>
+                    </select>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 2:00 PM</p>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button onclick="saveTimings()" class="btn btn-primary">Save Timings</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Theme Settings</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Choose your preferred theme for the admin panel.</p>
+            <div class="form-group" style="max-width: 300px;">
+                <label>Theme</label>
+                <select id="themeSelect" onchange="previewTheme()">
+                    <option value="light">Light Theme</option>
+                    <option value="dark">Dark Theme</option>
+                </select>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button onclick="saveTheme()" class="btn btn-primary">Save Theme</button>
+                <button onclick="resetTheme()" class="btn">Reset to Default</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Academic Year Settings</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Configure academic year details.</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; max-width: 600px;">
+                <div class="form-group">
+                    <label>Current Academic Year</label>
+                    <input type="text" id="academicYear" placeholder="e.g., 2025" value="2025">
+                </div>
+                <div class="form-group">
+                    <label>School Name</label>
+                    <input type="text" id="schoolName" placeholder="Enter school name">
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button onclick="saveAcademicSettings()" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Notification Settings</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Configure notification preferences (Coming Soon).</p>
+            <div style="opacity: 0.5; pointer-events: none;">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="emailNotifications" disabled>
+                        <span>Email Notifications</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="smsNotifications" disabled>
+                        <span>SMS Notifications</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Data Management</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">Export or backup your school data (Coming Soon).</p>
+            <div style="display: flex; gap: 1rem; opacity: 0.5; pointer-events: none;">
+                <button class="btn" disabled>Export All Data</button>
+                <button class="btn" disabled>Backup Database</button>
+                <button class="btn btn-danger" disabled>Reset System</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        let schoolSettings = {
+            startTime: '08:00',
+            endTime: '14:00',
+            theme: 'light',
+            academicYear: '2025',
+            schoolName: ''
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('schoolSettings');
+            if (saved) {
+                schoolSettings = JSON.parse(saved);
+                document.getElementById('schoolStartTime').value = schoolSettings.startTime;
+                document.getElementById('schoolEndTime').value = schoolSettings.endTime;
+                document.getElementById('themeSelect').value = schoolSettings.theme;
+                document.getElementById('academicYear').value = schoolSettings.academicYear || '2025';
+                document.getElementById('schoolName').value = schoolSettings.schoolName || '';
+                applyTheme(schoolSettings.theme);
+            }
+        }
+
+        // Save timings
+        function saveTimings() {
+            schoolSettings.startTime = document.getElementById('schoolStartTime').value;
+            schoolSettings.endTime = document.getElementById('schoolEndTime').value;
+            
+            localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
+            alert('School timings saved successfully!');
+        }
+
+        // Save theme
+        function saveTheme() {
+            schoolSettings.theme = document.getElementById('themeSelect').value;
+            localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
+            applyTheme(schoolSettings.theme);
+            alert('Theme saved successfully!');
+        }
+
+        // Reset theme
+        function resetTheme() {
+            schoolSettings.theme = 'light';
+            document.getElementById('themeSelect').value = 'light';
+            localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
+            applyTheme('light');
+            alert('Theme reset to default (Light)');
+        }
+
+        // Preview theme
+        function previewTheme() {
+            const theme = document.getElementById('themeSelect').value;
+            applyTheme(theme);
+        }
+
+        // Apply theme
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        }
+
+        // Save academic settings
+        function saveAcademicSettings() {
+            schoolSettings.academicYear = document.getElementById('academicYear').value;
+            schoolSettings.schoolName = document.getElementById('schoolName').value;
+            
+            localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
+            alert('Academic settings saved successfully!');
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+        });
+    </script>
+</body>
+</html>

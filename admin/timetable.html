@@ -6,6 +6,7 @@
     <title>Manage Timetable - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -20,6 +21,7 @@
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
             <a href="timetable.html" class="active">Timetable</a>
+            <a href="settings.html">Settings</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -29,81 +31,145 @@
         
         <div class="card">
             <h2>Weekly Timetable</h2>
-            <div class="form-group">
-                <label>Select Class</label>
-                <select id="classSelect">
-                    <option value="">Select a class</option>
-                </select>
+            <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label>Select Class</label>
+                    <select id="classSelect" onchange="loadTimetable()">
+                        <option value="">Select a class</option>
+                    </select>
+                </div>
+                <button onclick="openAddPeriodModal()" class="btn btn-primary">+ Add Period</button>
             </div>
             
-            <div class="table-responsive">
-                <table class="timetable-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Monday</th>
-                            <th>Tuesday</th>
-                            <th>Wednesday</th>
-                            <th>Thursday</th>
-                            <th>Friday</th>
-                        </tr>
-                    </thead>
-                    <tbody id="timetableBody">
-                        <tr>
-                            <td>8:00 - 9:00</td>
-                            <td>Mathematics</td>
-                            <td>English</td>
-                            <td>Science</td>
-                            <td>History</td>
-                            <td>Mathematics</td>
-                        </tr>
-                        <tr>
-                            <td>9:00 - 10:00</td>
-                            <td>English</td>
-                            <td>Science</td>
-                            <td>Mathematics</td>
-                            <td>English</td>
-                            <td>Science</td>
-                        </tr>
-                        <tr>
-                            <td>10:00 - 10:30</td>
-                            <td colspan="5" style="text-align: center; background: #f0f0f0;">Break</td>
-                        </tr>
-                        <tr>
-                            <td>10:30 - 11:30</td>
-                            <td>Science</td>
-                            <td>Mathematics</td>
-                            <td>English</td>
-                            <td>Science</td>
-                            <td>History</td>
-                        </tr>
-                        <tr>
-                            <td>11:30 - 12:30</td>
-                            <td>History</td>
-                            <td>Physical Ed</td>
-                            <td>History</td>
-                            <td>Mathematics</td>
-                            <td>English</td>
-                        </tr>
-                        <tr>
-                            <td>12:30 - 1:30</td>
-                            <td colspan="5" style="text-align: center; background: #f0f0f0;">Lunch Break</td>
-                        </tr>
-                        <tr>
-                            <td>1:30 - 2:30</td>
-                            <td>Art</td>
-                            <td>Music</td>
-                            <td>Physical Ed</td>
-                            <td>Art</td>
-                            <td>Music</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="timetableContainer" style="display: none;">
+                <div class="table-responsive">
+                    <table class="timetable-table" id="timetableTable">
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">Time</th>
+                                <th style="text-align: center;">Monday</th>
+                                <th style="text-align: center;">Tuesday</th>
+                                <th style="text-align: center;">Wednesday</th>
+                                <th style="text-align: center;">Thursday</th>
+                                <th style="text-align: center;">Friday</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
-            <p style="margin-top: 20px; color: #666;">
-                <em>Note: This is a sample timetable. Future updates will include dynamic timetable management.</em>
-            </p>
+            <div id="noClassSelected" style="text-align: center; padding: 3rem; color: #666;">
+                <p>Please select a class to view and manage its timetable.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Period Modal -->
+    <div id="addPeriodModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Add Period</h2>
+                <button onclick="closeAddPeriodModal()" class="btn">Close</button>
+            </div>
+            <form id="addPeriodForm">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Start Time *</label>
+                        <input type="time" id="periodStartTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time *</label>
+                        <input type="time" id="periodEndTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Period Type *</label>
+                        <select id="periodType" onchange="toggleSubjectFields()" required>
+                            <option value="">Select Type</option>
+                            <option value="class">Class Period</option>
+                            <option value="break">Break</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="dayField">
+                        <label>Day *</label>
+                        <select id="periodDay" required>
+                            <option value="">Select Day</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="subjectFields" style="display: none; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label>Subject *</label>
+                        <select id="periodSubject" required>
+                            <option value="">Select Subject</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Teacher</label>
+                        <select id="periodTeacher">
+                            <option value="">Select Teacher (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="breakFields" style="display: none; margin-top: 1rem;">
+                    <div class="form-group">
+                        <label>Break Name *</label>
+                        <input type="text" id="breakName" placeholder="e.g., Interval">
+                    </div>
+                    <p style="color: #666; font-size: 0.9rem; font-style: italic;">
+                        Note: Break periods will span across all days for the selected time slot.<br>
+                        <strong>School Schedule:</strong> 7:30 AM Start | 4 Periods (40 min each) | 10:30-10:50 Interval | 4 More Periods | End
+                    </p>
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">Add Period</button>
+                    <button type="button" onclick="closeAddPeriodModal()" class="btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Period Modal -->
+    <div id="editPeriodModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="background: white; max-width: 700px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Edit Period</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="deletePeriod()" class="btn btn-danger">Delete</button>
+                    <button onclick="closeEditPeriodModal()" class="btn">Close</button>
+                </div>
+            </div>
+            <form id="editPeriodForm">
+                <input type="hidden" id="editPeriodId">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div class="form-group">
+                        <label>Subject *</label>
+                        <select id="editPeriodSubject" required>
+                            <option value="">Select Subject</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Teacher</label>
+                        <select id="editPeriodTeacher">
+                            <option value="">Select Teacher (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">Update Period</button>
+                    <button type="button" onclick="closeEditPeriodModal()" class="btn">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -112,24 +178,464 @@
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
     <script>
+        let currentClassId = null;
+        let currentPeriodId = null;
+        let timetableData = [];
+
+        // Modal functions
+
+        function openAddPeriodModal() {
+            if (!currentClassId) {
+                alert('Please select a class first');
+                return;
+            }
+            document.getElementById('addPeriodModal').style.display = 'block';
+        }
+
+        function closeAddPeriodModal() {
+            document.getElementById('addPeriodModal').style.display = 'none';
+            document.getElementById('addPeriodForm').reset();
+            document.getElementById('subjectFields').style.display = 'none';
+            document.getElementById('breakFields').style.display = 'none';
+        }
+
+        function openEditPeriodModal(periodId, day, time) {
+            currentPeriodId = periodId;
+            // Find period data and populate form
+            const period = timetableData.find(p => p.id === periodId);
+            if (period) {
+                document.getElementById('editPeriodId').value = periodId;
+                document.getElementById('editPeriodSubject').value = period.subject_id || '';
+                document.getElementById('editPeriodTeacher').value = period.teacher_id || '';
+            }
+            document.getElementById('editPeriodModal').style.display = 'block';
+        }
+
+        function closeEditPeriodModal() {
+            document.getElementById('editPeriodModal').style.display = 'none';
+            currentPeriodId = null;
+        }
+
+        // Format time to 12-hour AM/PM format
+        function formatTime(time24) {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        function toggleSubjectFields() {
+            const type = document.getElementById('periodType').value;
+            const subjectFields = document.getElementById('subjectFields');
+            const breakFields = document.getElementById('breakFields');
+            const dayField = document.getElementById('dayField');
+            const daySelect = dayField.querySelector('select');
+            
+            if (type === 'class') {
+                subjectFields.style.display = 'block';
+                breakFields.style.display = 'none';
+                dayField.style.display = 'block';
+                daySelect.required = true;
+                document.getElementById('periodSubject').required = true;
+            } else if (type === 'break') {
+                subjectFields.style.display = 'none';
+                breakFields.style.display = 'block';
+                dayField.style.display = 'none';
+                daySelect.required = false;
+                daySelect.value = ''; // Clear day selection for breaks
+                document.getElementById('periodSubject').required = false;
+                document.getElementById('breakName').required = true;
+            } else {
+                subjectFields.style.display = 'none';
+                breakFields.style.display = 'none';
+                dayField.style.display = 'block';
+                document.getElementById('periodSubject').required = false;
+                document.getElementById('breakName').required = false;
+            }
+        }
+
         // Load classes for dropdown
         async function loadClassesDropdown() {
             try {
                 const classes = await getClasses();
+                console.log('Loaded classes:', classes);
                 const select = document.getElementById('classSelect');
                 
-                classes.forEach(cls => {
-                    const option = document.createElement('option');
-                    option.value = cls.id;
-                    option.textContent = cls.name;
-                    select.appendChild(option);
-                });
+                if (!classes || classes.length === 0) {
+                    select.innerHTML = '<option value="">No classes available</option>';
+                    console.warn('No classes found in database');
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Select a class</option>' + 
+                    classes.map(cls => `<option value="${cls.id}">${cls.class_name}</option>`).join('');
+                
+                console.log('Classes dropdown populated with', classes.length, 'classes');
             } catch (error) {
                 console.error('Error loading classes:', error);
+                const select = document.getElementById('classSelect');
+                select.innerHTML = '<option value="">Error loading classes</option>';
             }
         }
 
-        window.addEventListener('DOMContentLoaded', loadClassesDropdown);
+        // Load subjects and teachers directly from tables
+        async function loadSubjectsAndTeachers() {
+            try {
+                const client = getSupabaseClient();
+                
+                // Get subjects directly from subjects table to ensure we have IDs
+                const { data: subjects, error: subjectsError } = await client
+                    .from('subjects')
+                    .select('*')
+                    .order('subject_code', { ascending: true });
+                
+                // Get teachers
+                const { data: teachers, error: teachersError } = await client
+                    .from('teachers')
+                    .select('id, name_with_initials')
+                    .order('name_with_initials', { ascending: true });
+                
+                if (subjectsError) throw subjectsError;
+                if (teachersError) throw teachersError;
+                
+                console.log('Loaded subjects:', subjects);
+                console.log('Loaded teachers:', teachers);
+                
+                if (!subjects || subjects.length === 0) {
+                    console.warn('No subjects found');
+                    document.getElementById('periodSubject').innerHTML = '<option value="">No subjects available</option>';
+                    document.getElementById('editPeriodSubject').innerHTML = '<option value="">No subjects available</option>';
+                    return;
+                }
+                
+                // Sort subjects: General first, then OL
+                const sortedSubjects = subjects.sort((a, b) => {
+                    const aIsGeneral = a.subject_type?.includes('General');
+                    const bIsGeneral = b.subject_type?.includes('General');
+                    if (aIsGeneral && !bIsGeneral) return -1;
+                    if (!aIsGeneral && bIsGeneral) return 1;
+                    return a.subject_name.localeCompare(b.subject_name);
+                });
+                
+                // Populate subject dropdowns with formatted display
+                const subjectOptions = sortedSubjects.map(s => {
+                    console.log('Processing subject:', s);
+                    
+                    if (!s.id) {
+                        console.warn('Subject missing ID:', s);
+                        return '';
+                    }
+                    
+                    const grades = s.applicable_grades ? s.applicable_grades.join(',') : '';
+                    const category = s.subject_type?.includes('General') ? 'General' : 'OL';
+                    return `<option value="${s.id}">${category} - ${s.subject_name} (Grade ${grades})</option>`;
+                }).filter(opt => opt !== '').join('');
+                
+                if (!subjectOptions) {
+                    console.error('No valid subject options generated');
+                    document.getElementById('periodSubject').innerHTML = '<option value="">No subjects with valid IDs</option>';
+                    document.getElementById('editPeriodSubject').innerHTML = '<option value="">No subjects with valid IDs</option>';
+                    return;
+                }
+                
+                document.getElementById('periodSubject').innerHTML = '<option value="">Select Subject</option>' + subjectOptions;
+                document.getElementById('editPeriodSubject').innerHTML = '<option value="">Select Subject</option>' + subjectOptions;
+                
+                console.log('Subject dropdown HTML:', document.getElementById('periodSubject').innerHTML);
+                
+                // Populate teacher dropdowns
+                const teacherOptions = teachers.map(t => 
+                    `<option value="${t.id}">${t.name_with_initials}</option>`
+                ).join('');
+                
+                document.getElementById('periodTeacher').innerHTML = '<option value="">Select Teacher (Optional)</option>' + teacherOptions;
+                document.getElementById('editPeriodTeacher').innerHTML = '<option value="">Select Teacher (Optional)</option>' + teacherOptions;
+            } catch (error) {
+                console.error('Error loading subjects and teachers:', error);
+            }
+        }
+
+        // Load timetable for selected class
+        async function loadTimetable() {
+            const classId = document.getElementById('classSelect').value;
+            
+            if (!classId) {
+                document.getElementById('timetableContainer').style.display = 'none';
+                document.getElementById('noClassSelected').style.display = 'block';
+                currentClassId = null;
+                return;
+            }
+            
+            currentClassId = classId;
+            
+            try {
+                const client = getSupabaseClient();
+                const { data, error } = await client
+                    .from('timetable')
+                    .select(`
+                        *,
+                        subjects(subject_name, subject_code),
+                        teachers(name_with_initials)
+                    `)
+                    .eq('class_id', classId)
+                    .order('start_time', { ascending: true });
+                
+                if (error) throw error;
+                
+                timetableData = data || [];
+                displayTimetable(timetableData);
+                
+                document.getElementById('timetableContainer').style.display = 'block';
+                document.getElementById('noClassSelected').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading timetable:', error);
+                alert('Error loading timetable');
+            }
+        }
+
+        // Display timetable
+        function displayTimetable(data) {
+            const tbody = document.getElementById('timetableBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No timetable entries. Click "+ Add Period" to create one.</td></tr>';
+                return;
+            }
+            
+            // Group by time slots
+            const timeSlots = {};
+            data.forEach(entry => {
+                const timeKey = `${entry.start_time}-${entry.end_time}`;
+                if (!timeSlots[timeKey]) {
+                    timeSlots[timeKey] = {
+                        start: entry.start_time,
+                        end: entry.end_time,
+                        isBreak: entry.is_break,
+                        breakName: entry.break_name,
+                        periods: {}
+                    };
+                }
+                if (!entry.is_break) {
+                    timeSlots[timeKey].periods[entry.day_of_week] = entry;
+                }
+            });
+            
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            tbody.innerHTML = Object.keys(timeSlots).sort().map(timeKey => {
+                const slot = timeSlots[timeKey];
+                const timeDisplay = `${formatTime(slot.start)} - ${formatTime(slot.end)}`;
+                
+                if (slot.isBreak) {
+                    return `<tr>
+                        <td style="text-align: center;">${timeDisplay}</td>
+                        <td colspan="5" style="text-align: center; background: #f0f0f0; font-weight: 500;">
+                            ${slot.breakName}
+                        </td>
+                    </tr>`;
+                }
+                
+                return `<tr>
+                    <td style="text-align: center;">${timeDisplay}</td>
+                    ${days.map(day => {
+                        const period = slot.periods[day];
+                        if (period) {
+                            const subjectName = period.subjects?.subject_name || 'N/A';
+                            const teacherName = period.teachers?.name_with_initials || '';
+                            return `<td style="text-align: center; cursor: pointer; padding: 0.5rem; background: #f9f9f9;" 
+                                        onclick="openEditPeriodModal('${period.id}', '${day}', '${timeDisplay}')" 
+                                        title="Click to edit">
+                                <div style="font-weight: 500; color: #2c3e50;">${subjectName}</div>
+                                ${teacherName ? `<div style="font-size: 0.85rem; color: #666;">${teacherName}</div>` : ''}
+                            </td>`;
+                        }
+                        return '<td style="text-align: center; color: #999;">-</td>';
+                    }).join('')}
+                </tr>`;
+            }).join('');
+        }
+
+        // Add period form handler
+        document.getElementById('addPeriodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const type = document.getElementById('periodType').value;
+            const startTime = document.getElementById('periodStartTime').value;
+            const endTime = document.getElementById('periodEndTime').value;
+            
+            console.log('Adding period:', { type, startTime, endTime, currentClassId });
+            
+            // Validate that a class is selected
+            if (!currentClassId) {
+                alert('Please select a class first');
+                return;
+            }
+            
+            try {
+                const client = getSupabaseClient();
+                let result;
+                
+                if (type === 'break') {
+                    // Add break for all days
+                    const breakName = document.getElementById('breakName').value;
+                    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                    
+                    for (const day of days) {
+                        const { data, error } = await client.from('timetable').insert([{
+                            class_id: currentClassId,
+                            day_of_week: day,
+                            start_time: startTime,
+                            end_time: endTime,
+                            is_break: true,
+                            break_name: breakName
+                        }]);
+                        
+                        if (error) {
+                            console.error('Error inserting break for', day, error);
+                            throw error;
+                        }
+                        console.log('Break inserted for', day, data);
+                    }
+                } else {
+                    // Add class period
+                    const day = document.getElementById('periodDay').value;
+                    const subjectId = document.getElementById('periodSubject').value;
+                    const teacherId = document.getElementById('periodTeacher').value;
+                    
+                    console.log('Raw values:', { day, subjectId, teacherId });
+                    
+                    // Validate required fields
+                    if (!day || day === '') {
+                        alert('Please select a day');
+                        return;
+                    }
+                    
+                    if (!subjectId || subjectId === '') {
+                        alert('Please select a subject');
+                        return;
+                    }
+                    
+                    // Build period data with proper null handling
+                    const periodData = {
+                        class_id: currentClassId,
+                        day_of_week: day,
+                        start_time: startTime,
+                        end_time: endTime,
+                        subject_id: subjectId,
+                        is_break: false
+                    };
+                    
+                    // Only add teacher_id if a teacher is selected
+                    if (teacherId && teacherId !== '') {
+                        periodData.teacher_id = teacherId;
+                    }
+                    
+                    console.log('Inserting class period:', periodData);
+                    
+                    const { data, error } = await client.from('timetable').insert([periodData]);
+                    
+                    if (error) {
+                        console.error('Error inserting period:', error);
+                        throw error;
+                    }
+                    
+                    console.log('Period inserted successfully:', data);
+                }
+                
+                alert('Period added successfully!');
+                closeAddPeriodModal();
+                await loadTimetable();
+            } catch (error) {
+                console.error('Error adding period:', error);
+                alert('Error adding period: ' + error.message);
+            }
+        });
+
+        // Edit period form handler
+        document.getElementById('editPeriodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const subjectId = document.getElementById('editPeriodSubject').value;
+            const teacherId = document.getElementById('editPeriodTeacher').value || null;
+            
+            try {
+                const client = getSupabaseClient();
+                await client
+                    .from('timetable')
+                    .update({
+                        subject_id: subjectId,
+                        teacher_id: teacherId
+                    })
+                    .eq('id', currentPeriodId);
+                
+                alert('Period updated successfully!');
+                closeEditPeriodModal();
+                loadTimetable();
+            } catch (error) {
+                console.error('Error updating period:', error);
+                alert('Error updating period: ' + error.message);
+            }
+        });
+
+        // Delete period
+        async function deletePeriod() {
+            if (!confirm('Are you sure you want to delete this period?')) return;
+            
+            try {
+                const client = getSupabaseClient();
+                await client
+                    .from('timetable')
+                    .delete()
+                    .eq('id', currentPeriodId);
+                
+                alert('Period deleted successfully!');
+                closeEditPeriodModal();
+                loadTimetable();
+            } catch (error) {
+                console.error('Error deleting period:', error);
+                alert('Error deleting period: ' + error.message);
+            }
+        }
+
+        // Close modals on outside click
+        const addPeriodModal = document.getElementById('addPeriodModal');
+        if (addPeriodModal) {
+            addPeriodModal.addEventListener('click', (e) => {
+                if (e.target.id === 'addPeriodModal') closeAddPeriodModal();
+            });
+        }
+        
+        const editPeriodModal = document.getElementById('editPeriodModal');
+        if (editPeriodModal) {
+            editPeriodModal.addEventListener('click', (e) => {
+                if (e.target.id === 'editPeriodModal') closeEditPeriodModal();
+            });
+        }
+
+        // Initialize page
+        async function initializePage() {
+            console.log('Timetable page loading...');
+            
+            // Ensure Supabase client is initialized
+            const client = getSupabaseClient();
+            if (!client) {
+                console.error('Supabase client not initialized');
+                alert('Database connection failed. Please refresh the page.');
+                return;
+            }
+            
+            console.log('Supabase client ready');
+            await loadClassesDropdown();
+            await loadSubjectsAndTeachers();
+            console.log('Timetable page initialization complete');
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            // Small delay to ensure Supabase is fully initialized
+            setTimeout(initializePage, 100);
+        });
     </script>
 </body>
 </html>

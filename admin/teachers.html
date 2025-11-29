@@ -6,6 +6,7 @@
     <title>Manage Teachers - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -20,6 +21,7 @@
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
             <a href="timetable.html">Timetable</a>
+            <a href="settings.html">Settings</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -68,12 +70,12 @@
                 <table id="teachersTable">
                     <thead>
                         <tr>
-                            <th>Name with Initials</th>
-                            <th>Teacher Grade</th>
-                            <th>Appointed Date</th>
-                            <th>Contact Number</th>
-                            <th>Subjects</th>
-                            <th>Actions</th>
+                            <th style="text-align: center;">Name with Initials</th>
+                            <th style="text-align: center;">Teacher Grade</th>
+                            <th style="text-align: center;">Appointed Date</th>
+                            <th style="text-align: center;">Contact Number</th>
+                            <th style="text-align: center;">Subjects</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="teachersTableBody">
@@ -304,12 +306,12 @@
                 const subjects = teacher.subject_teachers?.map(st => st.subjects?.subject_name).filter(Boolean).join(', ') || 'None';
                 return `
                     <tr>
-                        <td>${teacher.name_with_initials}</td>
-                        <td>${teacher.teacher_grade}</td>
-                        <td>${new Date(teacher.appointed_date).toLocaleDateString()}</td>
-                        <td>${teacher.contact_number || 'N/A'}</td>
-                        <td>${subjects}</td>
-                        <td>
+                        <td style="text-align: center;">${teacher.name_with_initials}</td>
+                        <td style="text-align: center;">${teacher.teacher_grade}</td>
+                        <td style="text-align: center;">${new Date(teacher.appointed_date).toLocaleDateString()}</td>
+                        <td style="text-align: center;">${teacher.contact_number || 'N/A'}</td>
+                        <td style="text-align: center;">${subjects}</td>
+                        <td style="text-align: center;">
                             <button onclick="viewTeacherDetails('${teacher.id}')" class="btn btn-small">View Details</button>
                             <button onclick="openEditTeacherModal('${teacher.id}')" class="btn btn-small btn-primary">Edit</button>
                         </td>

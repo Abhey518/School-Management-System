@@ -6,6 +6,7 @@
     <title>Manage Subjects - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -20,6 +21,7 @@
             <a href="classes.html">Classes</a>
             <a href="subjects.html" class="active">Subjects</a>
             <a href="timetable.html">Timetable</a>
+            <a href="settings.html">Settings</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -68,12 +70,12 @@
                 <table id="subjectsTable">
                     <thead>
                         <tr>
-                            <th>Code</th>
-                            <th>Subject Name</th>
-                            <th>Type</th>
-                            <th>Applicable Grades</th>
-                            <th>Assigned Teachers</th>
-                            <th>Actions</th>
+                            <th style="text-align: center;">Code</th>
+                            <th style="text-align: center;">Subject Name</th>
+                            <th style="text-align: center;">Type</th>
+                            <th style="text-align: center;">Applicable Grades</th>
+                            <th style="text-align: center;">Assigned Teachers</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="subjectsTableBody">
@@ -199,12 +201,12 @@
                 
                 return `
                     <tr>
-                        <td>${subject.subject_code}</td>
-                        <td>${subject.subject_name}</td>
-                        <td>${subject.subject_type}</td>
-                        <td>${grades}</td>
-                        <td>${teachers}</td>
-                        <td>
+                        <td style="text-align: center;">${subject.subject_code}</td>
+                        <td style="text-align: center;">${subject.subject_name}</td>
+                        <td style="text-align: center;">${subject.subject_type}</td>
+                        <td style="text-align: center;">${grades}</td>
+                        <td style="text-align: center;">${teachers}</td>
+                        <td style="text-align: center;">
                             <button onclick="openAssignTeacherModal('${subjectId}', '${subject.subject_name}')" class="btn btn-small">Manage Teachers</button>
                         </td>
                     </tr>

@@ -6,6 +6,7 @@
     <title>Manage Students - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -20,6 +21,7 @@
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
             <a href="timetable.html">Timetable</a>
+            <a href="settings.html">Settings</a>
             <a href="../index.html">Logout</a>
         </div>
     </nav>
@@ -66,10 +68,11 @@
                 </div>
                 <div class="form-group" style="margin: 0;">
                     <label style="font-size: 0.9rem;">Birth Year</label>
-                    <input type="number" id="filterBirthYear" placeholder="e.g., 2010" style="font-size: 0.9rem; padding: 0.4rem;">
+                    <input type="number" id="filterBirthYear" placeholder="e.g., 2009" min="2009" max="2025" style="font-size: 0.9rem; padding: 0.4rem;">
                 </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button onclick="applyFilters()" class="btn btn-primary" style="width: 100%; font-size: 0.9rem; padding: 0.5rem;">Apply Filters</button>
+                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <button onclick="applyFilters()" class="btn btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.5rem;">Apply Filters</button>
+                    <button onclick="clearFilters()" class="btn" style="flex: 1; font-size: 0.9rem; padding: 0.5rem;">Clear Filters</button>
                 </div>
             </div>
 
@@ -77,11 +80,11 @@
                 <table id="studentsTable">
                     <thead>
                         <tr>
-                            <th>Admission No</th>
-                            <th>Name with Initials</th>
-                            <th>Class</th>
-                            <th>Emergency Contact</th>
-                            <th>Actions</th>
+                            <th style="text-align: center;">Admission No</th>
+                            <th style="text-align: center;">Name with Initials</th>
+                            <th style="text-align: center;">Class</th>
+                            <th style="text-align: center;">Emergency Contact</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="studentsTableBody">
@@ -400,11 +403,11 @@
                 
                 tbody.innerHTML = students.map(student => `
                     <tr>
-                        <td>${student.admission_no || 'N/A'}</td>
-                        <td>${student.name_with_initials}</td>
-                        <td>${student.class_name}</td>
-                        <td>${student.emergency_contact_number || 'N/A'}</td>
-                        <td>
+                        <td style="text-align: center;">${student.admission_no}</td>
+                        <td style="text-align: center;">${student.name_with_initials}</td>
+                        <td style="text-align: center;">${student.class_name || 'Not Assigned'}</td>
+                        <td style="text-align: center;">${student.emergency_contact_number || 'N/A'}</td>
+                        <td style="text-align: center;">
                             <button onclick="viewStudentDetails('${student.id}')" class="btn btn-small">View Details</button>
                             <button onclick="openEditStudentModal('${student.id}')" class="btn btn-small btn-primary">Edit</button>
                         </td>

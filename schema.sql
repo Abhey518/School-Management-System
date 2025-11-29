@@ -175,6 +175,28 @@ CREATE INDEX idx_marks_student_id ON marks(student_id);
 CREATE INDEX idx_marks_subject_id ON marks(subject_id);
 CREATE INDEX idx_marks_exam_name ON marks(exam_name);
 
+-- ==================== TIMETABLE TABLE ====================
+CREATE TABLE timetable (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    class_id UUID REFERENCES classes(id) ON DELETE CASCADE NOT NULL,
+    day_of_week TEXT CHECK (day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    subject_id UUID REFERENCES subjects(id) ON DELETE SET NULL,
+    teacher_id UUID REFERENCES teachers(id) ON DELETE SET NULL,
+    is_break BOOLEAN DEFAULT FALSE,
+    break_name TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT valid_time_range CHECK (end_time > start_time)
+);
+
+-- Create indexes for timetable
+CREATE INDEX idx_timetable_class_id ON timetable(class_id);
+CREATE INDEX idx_timetable_day ON timetable(day_of_week);
+CREATE INDEX idx_timetable_subject ON timetable(subject_id);
+CREATE INDEX idx_timetable_teacher ON timetable(teacher_id);
+
 -- ==================== ADD FOREIGN KEY CONSTRAINTS FOR CLASS MONITORS ====================
 ALTER TABLE classes
 ADD CONSTRAINT fk_class_monitor FOREIGN KEY (class_monitor_id) REFERENCES students(id) ON DELETE SET NULL,
@@ -305,6 +327,7 @@ LEFT JOIN teachers t ON st.teacher_id = t.id
 GROUP BY s.id, s.subject_code, s.subject_name, s.subject_type, s.applicable_grades;
 
 -- View for class information with teachers and monitors
+DROP VIEW IF EXISTS class_full_info;
 CREATE OR REPLACE VIEW class_full_info AS
 SELECT 
     c.id,
