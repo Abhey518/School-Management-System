@@ -40,13 +40,10 @@
         </div>
         
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2>Teachers List</h2>
-                <button onclick="clearFilters()" class="btn">Clear Filters</button>
-            </div>
+            <h2 style="margin-bottom: 1rem;">Teachers List</h2>
             
             <!-- Filter Section -->
-            <div style="display: grid; grid-template-columns: 150px 200px 2fr 140px; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: 150px 200px 1fr 220px; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
                 <div>
                     <label style="display: block; margin-bottom: 0.3rem; font-size: 0.9rem; font-weight: 500;">Teacher Grade</label>
                     <select id="filterTeacherGrade" style="width: 100%; padding: 0.4rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
@@ -68,8 +65,9 @@
                         <option value="">All Subjects</option>
                     </select>
                 </div>
-                <div style="align-self: flex-end;">
-                    <button onclick="applyFilters()" class="btn btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.9rem;">Apply Filters</button>
+                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <button onclick="applyFilters()" class="btn btn-primary" style="flex: 1; font-size: 0.9rem; padding: 0.5rem; white-space: nowrap;">Apply Filters</button>
+                    <button onclick="clearFilters()" class="btn" style="flex: 1; font-size: 0.9rem; padding: 0.5rem; white-space: nowrap;">Clear Filters</button>
                 </div>
             </div>
             
