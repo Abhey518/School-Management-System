@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Timetable - SMS</title>
+    <title>Timetable - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -18,7 +21,19 @@
             <a href="attendance.html">Attendance</a>
             <a href="marks.html">Marks</a>
             <a href="timetable.html" class="active">Timetable</a>
-            <a href="../index.html">Logout</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleProfileDropdown()">
+                    <span class="profile-icon">👤</span>
+                    <span class="teacher-name" id="teacherName">Teacher</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="teacherNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="profileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="account-settings.html">⚙️ Account Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -49,100 +64,9 @@
                     </thead>
                     <tbody id="timetableBody">
                         <tr>
-                            <td>8:00 - 9:00</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                Loading timetable...
                             </td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 9-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>9:00 - 10:00</td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-B
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-B
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>10:00 - 10:30</td>
-                            <td colspan="5" style="text-align: center; background: #f0f0f0;">Break</td>
-                        </tr>
-                        <tr>
-                            <td>10:30 - 11:30</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 9-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 9-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>11:30 - 12:30</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-B
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="period">
-                                    <strong>Mathematics</strong><br>
-                                    Grade 10-A
-                                    <button class="mark-complete-btn" onclick="markPeriodComplete(this)">✓</button>
-                                </div>
-                            </td>
-                            <td>-</td>
                         </tr>
                     </tbody>
                 </table>
@@ -158,6 +82,7 @@
     <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
     <script src="teacher.js"></script>
+    <script src="teacher-nav.js"></script>
     <script>
         let timetableData = [];
         let teacherId = localStorage.getItem('teacherId'); // Assume teacher ID is stored on login
@@ -304,6 +229,10 @@
         
         // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication first
+            const isAuth = await checkAuthentication('teacher');
+            if (!isAuth) return;
+            
             if (!teacherId) {
                 console.warn('No teacher ID found. Using mock data.');
                 // For testing without login, you can set a test teacher ID

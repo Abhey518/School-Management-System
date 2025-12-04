@@ -20,10 +20,22 @@
             <a href="teachers.html">Teachers</a>
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
-            <a href="marks-approval.html">Marks Approval</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
             <a href="timetable.html">Timetable</a>
-            <a href="settings.html" class="active">Settings</a>
-            <a href="../index.html">Logout</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="admin-account-settings.html">⚙️ Account Settings</a>
+                    <a href="settings.html" class="active">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -37,18 +49,18 @@
                 <div class="form-group">
                     <label>School Start Time</label>
                     <select id="schoolStartTime">
-                        <option value="07:30">7:30 AM</option>
-                        <option value="08:00" selected>8:00 AM</option>
+                        <option value="07:30" selected>7:30 AM</option>
+                        <option value="08:00">8:00 AM</option>
                     </select>
-                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 8:00 AM</p>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 7:30 AM</p>
                 </div>
                 <div class="form-group">
                     <label>School End Time</label>
                     <select id="schoolEndTime">
-                        <option value="13:30">1:30 PM</option>
-                        <option value="14:00" selected>2:00 PM</option>
+                        <option value="13:30" selected>1:30 PM</option>
+                        <option value="14:00">2:00 PM</option>
                     </select>
-                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 2:00 PM</p>
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Default: 1:30 PM</p>
                 </div>
             </div>
             <div style="margin-top: 1.5rem;">
@@ -92,27 +104,17 @@
 
         <div class="card">
             <h2>Notification Settings</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Configure notification preferences (Coming Soon).</p>
-            <div style="opacity: 0.5; pointer-events: none;">
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="emailNotifications" disabled>
-                        <span>Email Notifications</span>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="smsNotifications" disabled>
-                        <span>SMS Notifications</span>
-                    </label>
-                </div>
+            <p style="color: #666; margin-bottom: 1.5rem; text-align: center;">Under Development</p>
+            <div style="display: flex; gap: 1rem; opacity: 0.5; pointer-events: none; justify-content: center;">
+                <button class="btn" disabled>Email Notifications</button>
+                <button class="btn" disabled>SMS Notifications</button>
             </div>
         </div>
 
         <div class="card">
             <h2>Data Management</h2>
-            <p style="color: #666; margin-bottom: 1.5rem;">Export or backup your school data (Coming Soon).</p>
-            <div style="display: flex; gap: 1rem; opacity: 0.5; pointer-events: none;">
+            <p style="color: #666; margin-bottom: 1.5rem; text-align: center;">Under Development</p>
+            <div style="display: flex; gap: 1rem; opacity: 0.5; pointer-events: none; justify-content: center;">
                 <button class="btn" disabled>Export All Data</button>
                 <button class="btn" disabled>Backup Database</button>
                 <button class="btn btn-danger" disabled>Reset System</button>
@@ -122,12 +124,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
+    <script src="admin-profile.js"></script>
     <script>
         let schoolSettings = {
-            startTime: '08:00',
-            endTime: '14:00',
+            startTime: '07:30',
+            endTime: '13:30',
             theme: 'light',
             academicYear: '2025',
             schoolName: ''
@@ -198,8 +202,11 @@
         }
 
         // Initialize
-        window.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                loadSettings();
+            }
         });
     </script>
 </body>

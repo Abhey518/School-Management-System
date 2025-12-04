@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Requests - Admin Dashboard</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
+    <style>
+        .container { max-width: 1400px; }
+        .tickets-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .ticket-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s;
+        }
+        .ticket-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .ticket-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ticket-title h3 {
+            margin: 0;
+            color: #333;
+        }
+        .priority-badge {
+            font-size: 20px;
+        }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .ticket-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .ticket-message {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: #333;
+        }
+        .response-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .response-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .response-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        .response-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .admin-response {
+            background: #e8f5e9;
+            border-left: 3px solid #4CAF50;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-tab.active {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-color: #11998e;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="support-tickets.html" class="notification-badge active" id="supportLink" data-count="0">Requests</a>
+            <a href="timetable.html">Timetable</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="admin-account-settings.html">⚙️ Account Settings</a>
+                    <a href="settings.html">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Teacher Requests</h1>
+        <p style="color: #666; margin-bottom: 20px;">Manage support tickets and marks approval requests from teachers</p>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number" id="pendingCount">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inProgressCount">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="resolvedCount">0</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" onclick="filterTickets('all')">All Requests</button>
+            <button class="filter-tab" onclick="filterTickets('support')">Support Tickets</button>
+            <button class="filter-tab" onclick="filterTickets('marks')">Marks Approval</button>
+            <button class="filter-tab" onclick="filterTickets('pending')">Pending</button>
+            <button class="filter-tab" onclick="filterTickets('in_progress')">In Progress</button>
+            <button class="filter-tab" onclick="filterTickets('resolved')">Resolved</button>
+        </div>
+
+        <div id="ticketsContainer" class="tickets-grid">
+            Loading tickets...
+        </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-profile.js"></script>
+    <script>
+        const supabase = getSupabaseClient();
+        let allTickets = [];
+        let currentFilter = 'all';
+
+        // Load all tickets
+        async function loadTickets() {
+            try {
+                allTickets = await getAllSupportTickets();
+                updateStats();
+                displayTickets(currentFilter);
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                document.getElementById('ticketsContainer').innerHTML = 
+                    '<p style="color: #f44336;">Error loading tickets. Please try again.</p>';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const pending = allTickets.filter(t => t.status === 'pending').length;
+            const inProgress = allTickets.filter(t => t.status === 'in_progress').length;
+            const resolved = allTickets.filter(t => t.status === 'resolved').length;
+            
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('resolvedCount').textContent = resolved;
+            document.getElementById('totalCount').textContent = allTickets.length;
+        }
+
+        // Filter tickets
+        function filterTickets(status) {
+            currentFilter = status;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayTickets(status);
+        }
+
+        // Display tickets
+        function displayTickets(filter) {
+            const container = document.getElementById('ticketsContainer');
+            
+            let filteredTickets = allTickets;
+            if (filter !== 'all') {
+                filteredTickets = allTickets.filter(t => t.status === filter);
+            }
+            
+            if (filteredTickets.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No tickets found.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            filteredTickets.forEach(ticket => {
+                const statusColors = {
+                    'pending': { bg: '#fff3e0', text: '#e65100' },
+                    'in_progress': { bg: '#e3f2fd', text: '#1565c0' },
+                    'resolved': { bg: '#e8f5e9', text: '#2e7d32' },
+                    'closed': { bg: '#f5f5f5', text: '#616161' }
+                };
+                
+                const colors = statusColors[ticket.status] || statusColors.closed;
+                
+                const priorityBadges = {
+                    'low': '🟢',
+                    'normal': '🟡',
+                    'high': '🟠',
+                    'urgent': '🔴'
+                };
+                
+                const teacherName = ticket.teachers?.full_name || ticket.teachers?.name_with_initials || 'Unknown Teacher';
+                
+                html += `
+                    <div class="ticket-card">
+                        <div class="ticket-header">
+                            <div class="ticket-title">
+                                <span class="priority-badge">${priorityBadges[ticket.priority]}</span>
+                                <div>
+                                    <h3>${ticket.subject}</h3>
+                                    <div style="font-size: 13px; color: #666; margin-top: 3px;">
+                                        by ${teacherName}
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="status-badge" style="background: ${colors.bg}; color: ${colors.text};">
+                                ${ticket.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+                        
+                        <div class="ticket-meta">
+                            <span>📁 ${ticket.category}</span>
+                            <span>⚡ ${ticket.priority.toUpperCase()}</span>
+                            <span>📅 ${new Date(ticket.created_at).toLocaleString()}</span>
+                        </div>
+                        
+                        <div class="ticket-message">
+                            <strong>Message:</strong>
+                            <p style="margin: 10px 0 0 0;">${ticket.message}</p>
+                        </div>
+                        
+                        ${ticket.admin_response ? `
+                            <div class="admin-response">
+                                <strong style="color: #2e7d32;">Your Response:</strong>
+                                <p style="margin: 5px 0 0 0;">${ticket.admin_response}</p>
+                                <small style="color: #666;">Responded: ${new Date(ticket.admin_response_date).toLocaleString()}</small>
+                            </div>
+                        ` : ''}
+                        
+                        ${ticket.status !== 'closed' ? `
+                            <div class="response-section">
+                                <strong>Admin Action:</strong>
+                                <div class="response-form">
+                                    <textarea id="response-${ticket.id}" placeholder="Type your response here...">${ticket.admin_response || ''}</textarea>
+                                    <div class="response-actions">
+                                        <select id="status-${ticket.id}" class="form-select" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                                            <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                            <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                            <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                        </select>
+                                        <button class="btn btn-primary" onclick="respondToTicket('${ticket.id}')">
+                                            ${ticket.admin_response ? 'Update Response' : 'Send Response'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Respond to ticket
+        async function respondToTicket(ticketId) {
+            try {
+                const response = document.getElementById(`response-${ticketId}`).value.trim();
+                const status = document.getElementById(`status-${ticketId}`).value;
+                
+                if (!response) {
+                    alert('Please enter a response message');
+                    return;
+                }
+                
+                // Find the ticket
+                const ticket = allTickets.find(t => t.id === ticketId);
+                if (!ticket) {
+                    throw new Error('Ticket not found');
+                }
+                
+                const updateData = {
+                    admin_response: response,
+                    admin_response_date: new Date().toISOString(),
+                    status: status
+                };
+                
+                await updateSupportTicket(ticketId, updateData);
+                
+                // Create notification for teacher
+                try {
+                    const notificationData = {
+                        teacher_id: ticket.teacher_id,
+                        type: 'support',
+                        title: 'Support Ticket Response',
+                        message: `Your ticket "${ticket.subject}" has been ${status === 'resolved' ? 'resolved' : 'updated'}.`,
+                        link: 'account-settings.html#support',
+                        priority: ticket.priority || 'normal',
+                        metadata: {
+                            detail: response,
+                            ticket_id: ticketId,
+                            status: status
+                        }
+                    };
+                    
+                    await createNotification(notificationData);
+                } catch (notifError) {
+                    console.log('Notification creation skipped (table may not exist yet):', notifError);
+                }
+                
+                alert('Response sent successfully!');
+                
+                // Reload tickets
+                await loadTickets();
+                
+            } catch (error) {
+                console.error('Error responding to ticket:', error);
+                alert('Error sending response. Please try again.');
+            }
+        }
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                await loadTickets();
+                
+                // Auto-refresh every 30 seconds
+                setInterval(async () => {
+                    await loadTickets();
+                }, 30000);
+            }
+        });
+    </script>
+</body>
+</html>

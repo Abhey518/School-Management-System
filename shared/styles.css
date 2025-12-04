@@ -447,3 +447,158 @@ body.dark-theme textarea::placeholder {
     color: #999 !important;
     opacity: 1;
 }
+
+/* Dark theme for notifications */
+body.dark-theme .notification-item {
+    background: #2a2a2a !important;
+    border-color: #555 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .notification-item:hover {
+    background: #333 !important;
+    border-color: #667eea !important;
+}
+
+body.dark-theme .notification-item.unread {
+    border-left-color: #667eea !important;
+}
+
+body.dark-theme .notification-type,
+body.dark-theme .notification-title {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .notification-message {
+    color: #aaa !important;
+}
+
+body.dark-theme .notification-time {
+    color: #888 !important;
+}
+
+body.dark-theme .filter-btn {
+    background: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+}
+
+body.dark-theme .filter-btn:hover {
+    background: #333 !important;
+}
+
+body.dark-theme .filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: #667eea !important;
+}
+
+/* Dark theme for support tickets/requests */
+body.dark-theme .ticket-card {
+    background: #2a2a2a !important;
+    border-color: #555 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .ticket-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+body.dark-theme .ticket-title h3,
+body.dark-theme .ticket-info p strong {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .ticket-info p {
+    color: #aaa !important;
+}
+
+body.dark-theme .ticket-message {
+    background: #1f1f1f !important;
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+}
+
+body.dark-theme .ticket-response {
+    background: #1a3d1a !important;
+    border-color: #2d5a2d !important;
+}
+
+body.dark-theme .response-form {
+    background: #1f1f1f !important;
+    border-color: #555 !important;
+}
+
+body.dark-theme .response-form textarea {
+    background: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-color: #555 !important;
+}
+
+/* Dark theme for account settings */
+body.dark-theme .settings-section {
+    background: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #555 !important;
+}
+
+body.dark-theme .settings-section h2 {
+    color: #5dade2 !important;
+    border-bottom-color: #667eea !important;
+}
+
+body.dark-theme .profile-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+body.dark-theme .profile-details h3,
+body.dark-theme .profile-details p {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .success-message {
+    background: #1a3d1a !important;
+    color: #90ee90 !important;
+    border-color: #2d5a2d !important;
+}
+
+body.dark-theme .error-message {
+    background: #3d1a1a !important;
+    color: #ff8080 !important;
+    border-color: #5a2d2d !important;
+}
+
+body.dark-theme input[readonly] {
+    background: #1f1f1f !important;
+    color: #888 !important;
+}
+
+/* Dark theme for profile dropdown */
+body.dark-theme .profile-dropdown-content {
+    background: #2a2a2a !important;
+    border: 1px solid #555 !important;
+}
+
+body.dark-theme .profile-dropdown-content a {
+    color: #e0e0e0 !important;
+    border-bottom-color: #555 !important;
+}
+
+body.dark-theme .profile-dropdown-content a:hover {
+    background: #333 !important;
+}
+
+body.dark-theme .profile-dropdown-content a.active {
+    background: #333 !important;
+    color: #667eea !important;
+}
+
+/* Dark theme for stats cards */
+body.dark-theme .stats-grid {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .stat-card h3,
+body.dark-theme .stat-card p {
+    color: #e0e0e0 !important;
+}

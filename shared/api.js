@@ -877,6 +877,292 @@ async function getMarksByClassAndExam(classId, examType) {
     }
 }
 
+// ==================== SUPPORT TICKETS ====================
+
+/**
+ * Create a support ticket
+ * @param {Object} ticketData - Ticket information
+ * @returns {Promise<Object>} Created ticket
+ */
+async function createSupportTicket(ticketData) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await client
+            .from('support_tickets')
+            .insert([ticketData])
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (error) {
+        console.error('Error creating support ticket:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get support tickets for a teacher
+ * @param {string} teacherId - Teacher ID
+ * @returns {Promise<Array>} List of tickets
+ */
+async function getTeacherTickets(teacherId) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await client
+            .from('support_tickets')
+            .select('*')
+            .eq('teacher_id', teacherId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching teacher tickets:', error);
+        return [];
+    }
+}
+
+/**
+ * Get all support tickets (for admin)
+ * @param {string} status - Optional status filter
+ * @returns {Promise<Array>} List of tickets
+ */
+async function getAllSupportTickets(status = null) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        let query = client
+            .from('support_tickets')
+            .select('*, teachers(full_name, name_with_initials, email)')
+            .order('created_at', { ascending: false });
+
+        if (status) {
+            query = query.eq('status', status);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching support tickets:', error);
+        return [];
+    }
+}
+
+/**
+ * Update support ticket with admin response
+ * @param {string} ticketId - Ticket ID
+ * @param {Object} updateData - Update information
+ * @returns {Promise<Object>} Updated ticket
+ */
+async function updateSupportTicket(ticketId, updateData) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await client
+            .from('support_tickets')
+            .update(updateData)
+            .eq('id', ticketId)
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (error) {
+        console.error('Error updating support ticket:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get count of pending tickets (for notifications)
+ * @returns {Promise<number>} Count of pending tickets
+ */
+async function getPendingTicketsCount() {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { count, error } = await client
+            .from('support_tickets')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'pending');
+
+        if (error) throw error;
+        return count || 0;
+    } catch (error) {
+        console.error('Error fetching pending tickets count:', error);
+        return 0;
+    }
+}
+
+/**
+ * Get count of tickets with admin responses that teacher hasn't seen
+ * @param {string} teacherId - Teacher ID
+ * @returns {Promise<number>} Count of tickets with new responses
+ */
+async function getTeacherNotificationCount(teacherId) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { count, error } = await client
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('teacher_id', teacherId)
+            .eq('is_read', false);
+
+        if (error) {
+            // Fallback to support tickets if notifications table doesn't exist yet
+            const { count: ticketCount, error: ticketError } = await client
+                .from('support_tickets')
+                .select('*', { count: 'exact', head: true })
+                .eq('teacher_id', teacherId)
+                .not('admin_response', 'is', null)
+                .in('status', ['in_progress', 'resolved']);
+
+            if (ticketError) throw ticketError;
+            return ticketCount || 0;
+        }
+        
+        return count || 0;
+    } catch (error) {
+        console.error('Error fetching teacher notification count:', error);
+        return 0;
+    }
+}
+
+// ==================== NOTIFICATIONS ====================
+
+/**
+ * Create a notification for a teacher
+ * @param {Object} notificationData - Notification information
+ * @returns {Promise<Object>} Created notification
+ */
+async function createNotification(notificationData) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await client
+            .from('notifications')
+            .insert([notificationData])
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get notifications for a teacher
+ * @param {string} teacherId - Teacher ID
+ * @param {boolean} unreadOnly - Only get unread notifications
+ * @returns {Promise<Array>} List of notifications
+ */
+async function getTeacherNotifications(teacherId, unreadOnly = false) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        let query = client
+            .from('notifications')
+            .select('*')
+            .eq('teacher_id', teacherId)
+            .order('created_at', { ascending: false });
+
+        if (unreadOnly) {
+            query = query.eq('is_read', false);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return [];
+    }
+}
+
+/**
+ * Mark notification as read
+ * @param {string} notificationId - Notification ID
+ * @returns {Promise<Object>} Updated notification
+ */
+async function markNotificationAsRead(notificationId) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { data, error } = await client
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', notificationId)
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+        throw error;
+    }
+}
+
+/**
+ * Mark all notifications as read for a teacher
+ * @param {string} teacherId - Teacher ID
+ * @returns {Promise<void>}
+ */
+async function markAllNotificationsAsRead(teacherId) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { error } = await client
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('teacher_id', teacherId)
+            .eq('is_read', false);
+
+        if (error) throw error;
+    } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+        throw error;
+    }
+}
+
+/**
+ * Delete a notification
+ * @param {string} notificationId - Notification ID
+ * @returns {Promise<void>}
+ */
+async function deleteNotification(notificationId) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) throw new Error('Supabase client not initialized');
+
+        const { error } = await client
+            .from('notifications')
+            .delete()
+            .eq('id', notificationId);
+
+        if (error) throw error;
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+        throw error;
+    }
+}
+
 // Log API ready status
 console.log('%c✅ API Functions Loaded - Enhanced Version', 'color: #4CAF50; font-size: 14px; font-weight: bold;');
 console.log('Students: getStudents, getStudentDetails, filterStudents, addStudent, updateStudent, deleteStudentById');
@@ -886,4 +1172,5 @@ console.log('Subjects: getSubjects, getSubjectsForGrade, assignTeacherToSubject,
 console.log('Student-Subjects: getStudentSubjects, assignSubjectsToStudent, removeSubjectFromStudent');
 console.log('Attendance: markAttendance, getStudentAttendanceSummary, getAttendanceByClassAndDate, getAttendanceBySubjectAndDate');
 console.log('Marks: addMarks, updateMarks, getStudentMarksDetailed, getMarksBySubjectAndExam, getMarksByClassAndExam');
-console.log('                    addMarks, getMarksByStudent, getMarksByClassAndExam');
+console.log('Support Tickets: createSupportTicket, getTeacherTickets, getAllSupportTickets, updateSupportTicket, getPendingTicketsCount');
+console.log('Notifications: createNotification, getTeacherNotifications, getTeacherNotificationCount, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification');

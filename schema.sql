@@ -13,6 +13,23 @@ DROP TABLE IF EXISTS subjects CASCADE;
 DROP TABLE IF EXISTS classes CASCADE;
 DROP TABLE IF EXISTS students CASCADE;
 DROP TABLE IF EXISTS teachers CASCADE;
+DROP TABLE IF EXISTS user_roles CASCADE;
+
+-- ==================== USER ROLES TABLE (For Supabase Auth Integration) ====================
+-- This table links Supabase Auth users to their roles and teacher records
+CREATE TABLE user_roles (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE, -- References auth.users(id) in Supabase Auth
+    role TEXT NOT NULL CHECK (role IN ('admin', 'teacher')),
+    teacher_id UUID REFERENCES teachers(id) ON DELETE CASCADE, -- NULL for admin users
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for user_roles
+CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX idx_user_roles_role ON user_roles(role);
+CREATE INDEX idx_user_roles_teacher_id ON user_roles(teacher_id);
 
 -- ==================== TEACHERS TABLE ====================
 CREATE TABLE teachers (
@@ -575,6 +592,52 @@ CREATE TRIGGER update_classes_updated_at BEFORE UPDATE ON classes
 
 CREATE TRIGGER update_marks_updated_at BEFORE UPDATE ON marks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==================== SUPPORT TICKETS TABLE ====================
+-- This table handles teacher support requests to admin
+CREATE TABLE support_tickets (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    category TEXT CHECK (category IN ('Technical', 'Academic', 'Administrative', 'Other')),
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'resolved', 'closed')),
+    priority TEXT DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+    admin_response TEXT,
+    admin_response_date TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for support_tickets
+CREATE INDEX idx_support_tickets_teacher ON support_tickets(teacher_id);
+CREATE INDEX idx_support_tickets_status ON support_tickets(status);
+CREATE INDEX idx_support_tickets_created ON support_tickets(created_at DESC);
+
+-- Create trigger for support_tickets
+CREATE TRIGGER update_support_tickets_updated_at BEFORE UPDATE ON support_tickets
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==================== NOTIFICATIONS TABLE ====================
+-- This table stores all types of notifications for teachers
+CREATE TABLE notifications (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK (type IN ('support', 'marks', 'timetable', 'system', 'attendance', 'general')),
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    link TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    priority TEXT DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+    metadata JSONB, -- Additional data specific to notification type
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for notifications
+CREATE INDEX idx_notifications_teacher ON notifications(teacher_id);
+CREATE INDEX idx_notifications_unread ON notifications(teacher_id, is_read);
+CREATE INDEX idx_notifications_created ON notifications(created_at DESC);
+CREATE INDEX idx_notifications_type ON notifications(type);
 
 -- ==================== SAMPLE DATA (OPTIONAL) ====================
 -- Uncomment to insert sample data

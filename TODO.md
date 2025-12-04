@@ -2,62 +2,62 @@
 
 ## High Priority
 
-### 1. Authentication & Login System
+### 1. Authentication & Login System ✓ (COMPLETED)
 
-- [ ] Create login system to identify teachers separately
-- [ ] Implement role-based access (Admin, Teacher)
-- [ ] Store teacher ID in session/localStorage on login
-- [ ] Add password authentication
-- [ ] Implement logout functionality that clears session
+- [x] Create login system to identify teachers separately (COMPLETED)
+- [x] Implement role-based access (Admin, Teacher) (COMPLETED)
+- [x] Store teacher ID in session/localStorage on login (COMPLETED)
+- [x] Add password authentication (COMPLETED)
+- [x] Implement logout functionality that clears session (COMPLETED)
 
-### 2. Student-Subject Assignment (Admin Portal)
+### 2. Student-Subject Assignment (Admin Portal) ✓ (COMPLETED)
 
-- [ ] Create interface in Admin panel to assign subjects to students
-- [ ] Handle special cases:
+- [x] Create interface in Admin panel to assign subjects to students (COMPLETED)
+- [x] Handle special cases: (COMPLETED)
   - Religion subjects (not all students)
   - Basket subjects (different groups of students)
   - Main subjects (all students in class)
-- [ ] Store subject assignments in database
-- [ ] Create `student_subjects` table/relationship
-- [ ] Add bulk assignment feature for main subjects
-- [ ] Add individual assignment for basket/religion subjects
+- [x] Store subject assignments in database (COMPLETED)
+- [x] Create `student_subjects` table/relationship (COMPLETED)
+- [x] Add bulk assignment feature for main subjects (COMPLETED)
+- [x] Add individual assignment for basket/religion subjects (COMPLETED)
 
-### 3. Marks Entry & Approval System
+### 3. Marks Entry & Approval System ✓ (COMPLETED)
 
-#### Teacher Side:
+#### Teacher Side: ✓
 
-- [ ] Update marks entry to filter students by:
+- [x] Update marks entry to filter students by: (COMPLETED)
   - Class teacher is teaching
   - Subject teacher is assigned to
   - Only students enrolled in that subject
-- [ ] Add exam name dropdown (First Term, Second Term, Third Term Examination)
-- [ ] Display class name, subject name, exam name in marks entry form
-- [ ] Show student admission no, name, and marks input field
-- [ ] Submit marks for admin approval (mark as "Pending Approval")
-- [ ] Add notification system for teachers
+- [x] Add exam name dropdown (First Term, Second Term, Third Term Examination) (COMPLETED)
+- [x] Display class name, subject name, exam name in marks entry form (COMPLETED)
+- [x] Show student admission no, name, and marks input field (COMPLETED)
+- [x] Submit marks for admin approval (mark as "Pending Approval") (COMPLETED)
+- [x] Add notification system for teachers (COMPLETED)
   - See approval status
   - See admin feedback/recheck requests
 
-#### Admin Side:
+#### Admin Side: (PARTIALLY COMPLETED - Merged with Teacher Requests)
 
-- [ ] Create marks approval section in admin portal
-- [ ] Show pending marks submissions from teachers
-- [ ] Display: Teacher name, Class, Subject, Exam, Number of students
-- [ ] Allow admin to:
+- [x] Create marks approval section in admin portal (COMPLETED - Unified with Teacher Requests)
+- [ ] Show pending marks submissions from teachers (PENDING - Need to integrate marks data)
+- [ ] Display: Teacher name, Class, Subject, Exam, Number of students (PENDING)
+- [ ] Allow admin to: (PENDING)
   - View detailed marks entries
   - Approve marks
   - Request recheck with comments
-- [ ] Add notification system for admin
+- [x] Add notification system for admin (COMPLETED)
   - Alert when new marks are submitted
   - Track pending approvals
 
-### 4. Notification System
+### 4. Notification System ✓ (COMPLETED)
 
-- [ ] Design notification database schema
-- [ ] Create notification components for both admin and teacher portals
-- [ ] Implement real-time or periodic notification updates
-- [ ] Add notification badge/counter
-- [ ] Mark notifications as read functionality
+- [x] Design notification database schema (COMPLETED)
+- [x] Create notification components for both admin and teacher portals (COMPLETED)
+- [x] Implement real-time or periodic notification updates (COMPLETED - 30s auto-refresh)
+- [x] Add notification badge/counter (COMPLETED)
+- [x] Mark notifications as read functionality (COMPLETED)
 
 ## Medium Priority
 
@@ -127,7 +127,7 @@
 
 ## Completed ✓
 
-- ✅ Dark theme implementation across admin portal
+- ✅ Dark theme implementation across admin and teacher portals (including new pages)
 - ✅ Timetable management system with add/edit/delete periods
 - ✅ Settings page with school timings and theme
 - ✅ Student, Teacher, Class, Subject CRUD operations
@@ -137,7 +137,17 @@
 - ✅ Time format display (12-hour AM/PM format)
 - ✅ Full day schedule (8 periods + interval)
 - ✅ Container width standardization (1400px) across all portals
+- ✅ **Authentication & Login System** - Supabase authentication with role-based access
+- ✅ **Student-Subject Assignment** - Complete interface with bulk and individual assignment
+- ✅ **Notification System** - Full notification infrastructure with badges and auto-refresh
+- ✅ **Support Ticket System** - Teacher can request help/support from admin
+- ✅ **Unified Teacher Requests** - Merged marks approval with support tickets
+- ✅ **Profile Dropdown** - Notifications, account settings, system settings access
+- ✅ **Account Settings Pages** - For both admin and teacher with profile management
+- ✅ **Teacher Portal** - Dashboard, attendance, marks entry, timetable, notifications
+- ✅ **Attendance System** - Mark attendance, auto-subject detection, date-based filtering
+- ✅ **Marks Entry System** - Subject-filtered student lists, exam type selection
 
 ---
 
-**Last Updated:** November 30, 2025
+**Last Updated:** December 5, 2025

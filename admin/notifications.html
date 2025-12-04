@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Admin Dashboard</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="../shared/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
+    <style>
+        .container { max-width: 1400px; }
+        .notifications-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .notification-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .notification-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .notification-item.unread {
+            background: #f3f0ff;
+            border-left: 4px solid #667eea;
+        }
+        .notification-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        .notification-type {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .notification-icon {
+            font-size: 24px;
+        }
+        .notification-time {
+            font-size: 12px;
+            color: #666;
+        }
+        .notification-content {
+            color: #555;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-new {
+            background: #4CAF50;
+            color: white;
+        }
+        .badge-urgent {
+            background: #f44336;
+            color: white;
+        }
+        .badge-info {
+            background: #2196F3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
+            <a href="timetable.html">Timetable</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html" class="active">🔔 Notifications</a>
+                    <a href="admin-account-settings.html">⚙️ Account Settings</a>
+                    <a href="settings.html">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="notifications-header">
+            <h1>Admin Notifications</h1>
+            <button class="btn" onclick="markAllAsRead()" style="padding: 8px 16px;">Mark All as Read</button>
+        </div>
+
+        <div class="notification-filters">
+            <button class="filter-btn active" onclick="filterNotifications('all')">All</button>
+            <button class="filter-btn" onclick="filterNotifications('support')">Support Tickets</button>
+            <button class="filter-btn" onclick="filterNotifications('marks')">Marks Submissions</button>
+            <button class="filter-btn" onclick="filterNotifications('system')">System Alerts</button>
+            <button class="filter-btn" onclick="filterNotifications('student')">Student Updates</button>
+        </div>
+
+        <div id="notificationsList" class="notifications-list">
+            Loading notifications...
+        </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-profile.js"></script>
+    <script>
+        const supabase = getSupabaseClient();
+        let allNotifications = [];
+        let currentFilter = 'all';
+
+        // Load all notifications
+        async function loadNotifications() {
+            try {
+                const notifications = [];
+
+                // Get pending support tickets
+                const tickets = await getAllSupportTickets('pending');
+                tickets.forEach(ticket => {
+                    const teacherName = ticket.teachers?.full_name || ticket.teachers?.name_with_initials || 'Unknown Teacher';
+                    notifications.push({
+                        id: `ticket-${ticket.id}`,
+                        type: 'support',
+                        icon: '🎫',
+                        title: 'New Support Ticket',
+                        content: `${teacherName} submitted a ${ticket.category} ticket: "${ticket.subject}"`,
+                        detail: ticket.message,
+                        time: new Date(ticket.created_at),
+                        unread: true,
+                        link: `support-tickets.html`,
+                        priority: ticket.priority
+                    });
+                });
+
+                // TODO: Add more notification types for admin
+                // - New marks submissions pending approval
+                // - Student registration approvals
+                // - System errors or alerts
+                // - Teacher requests for changes
+
+                // Sort by time (newest first)
+                notifications.sort((a, b) => b.time - a.time);
+
+                allNotifications = notifications;
+                displayNotifications(currentFilter);
+
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                document.getElementById('notificationsList').innerHTML = 
+                    '<div class="empty-state"><p>Error loading notifications. Please try again.</p></div>';
+            }
+        }
+
+        // Filter notifications
+        function filterNotifications(type) {
+            currentFilter = type;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayNotifications(type);
+        }
+
+        // Display notifications
+        function displayNotifications(filter) {
+            const container = document.getElementById('notificationsList');
+            
+            let filtered = allNotifications;
+            if (filter !== 'all') {
+                filtered = allNotifications.filter(n => n.type === filter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔔</div>
+                        <h3>No notifications</h3>
+                        <p>You're all caught up!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(notification => {
+                const timeAgo = getTimeAgo(notification.time);
+                const unreadClass = notification.unread ? 'unread' : '';
+                const priorityBadge = notification.priority === 'urgent' ? '<span class="badge badge-urgent">Urgent</span>' : 
+                                     notification.priority === 'high' ? '<span class="badge badge-info">High</span>' : '';
+                
+                html += `
+                    <div class="notification-item ${unreadClass}">
+                        <div class="notification-header">
+                            <div class="notification-type">
+                                <span class="notification-icon">${notification.icon}</span>
+                                <span>${notification.title}</span>
+                                ${priorityBadge}
+                                ${notification.unread ? '<span class="badge badge-new">New</span>' : ''}
+                            </div>
+                            <span class="notification-time">${timeAgo}</span>
+                        </div>
+                        <div class="notification-content">
+                            <p>${notification.content}</p>
+                            ${notification.detail ? `
+                                <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #667eea;">
+                                    <strong>Details:</strong>
+                                    <p style="margin: 5px 0 0 0;">${notification.detail}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="notification-actions">
+                            ${notification.link ? `<a href="${notification.link}" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">View Details</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Get time ago string
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        // Mark all as read
+        function markAllAsRead() {
+            allNotifications.forEach(n => n.unread = false);
+            displayNotifications(currentFilter);
+            
+            // Update badge
+            const badge = document.getElementById('adminNotificationBadge');
+            if (badge) {
+                badge.classList.add('hidden');
+            }
+            
+            showToast('All notifications marked as read');
+        }
+
+        // Show toast message
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #323232;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 4px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                await loadNotifications();
+                
+                // Auto-refresh every 30 seconds
+                setInterval(loadNotifications, 30000);
+            }
+        });
+    </script>
+</body>
+</html>

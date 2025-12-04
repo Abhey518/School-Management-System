@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - SMS Admin</title>
+    <link rel="stylesheet" href="../shared/styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
+    <style>
+        .settings-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .settings-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .settings-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-group input[readonly] {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .success-message, .error-message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .success-message.show, .error-message.show {
+            display: block;
+        }
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+        .profile-details h3 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        .profile-details p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">SMS Admin</div>
+        <div class="nav-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="students.html">Students</a>
+            <a href="teachers.html">Teachers</a>
+            <a href="classes.html">Classes</a>
+            <a href="subjects.html">Subjects</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
+            <a href="timetable.html">Timetable</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="admin-account-settings.html" class="active">⚙️ Account Settings</a>
+                    <a href="settings.html">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container settings-container">
+        <h1>Account Settings</h1>
+
+        <div class="settings-section">
+            <div class="profile-info">
+                <div class="profile-avatar" id="profileAvatar">👤</div>
+                <div class="profile-details">
+                    <h3 id="adminDisplayName">Loading...</h3>
+                    <p id="adminEmail">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>Account Information</h2>
+            <div id="infoMessage" class="success-message"></div>
+            <div id="infoError" class="error-message"></div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="adminEmailInput" readonly>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <input type="text" value="Administrator" readonly>
+            </div>
+            <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                <em>Note: Email and role information can only be changed through the database.</em>
+            </p>
+        </div>
+
+        <div class="settings-section">
+            <h2>Change Password</h2>
+            <div id="passwordMessage" class="success-message"></div>
+            <div id="passwordError" class="error-message"></div>
+            
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                    <small style="color: #666;">Minimum 6 characters</small>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Update Password</button>
+                    <button type="button" class="btn" onclick="resetPasswordForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-navbar.js"></script>
+    <script src="admin-profile.js"></script>
+    <script>
+        const supabase = getSupabaseClient();
+
+        // Load admin information
+        async function loadAdminInfo() {
+            try {
+                const user = getCurrentUser();
+                if (!user || !user.email) {
+                    throw new Error('No user found');
+                }
+
+                // Update profile header
+                const emailName = user.email.split('@')[0];
+                const displayName = emailName.charAt(0).toUpperCase() + emailName.slice(1).replace(/[._]/g, ' ');
+                
+                document.getElementById('adminDisplayName').textContent = displayName || 'Admin';
+                document.getElementById('adminEmail').textContent = user.email;
+                
+                // Set profile avatar initial
+                const initial = displayName.charAt(0).toUpperCase();
+                document.getElementById('profileAvatar').textContent = initial;
+                
+                // Fill form field
+                document.getElementById('adminEmailInput').value = user.email;
+                
+            } catch (error) {
+                console.error('Error loading admin info:', error);
+                showError('infoError', 'Error loading account information');
+            }
+        }
+
+        // Change password
+        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Clear previous messages
+            hideMessages();
+            
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                showError('passwordError', 'New passwords do not match');
+                return;
+            }
+            
+            // Validate password strength
+            if (newPassword.length < 6) {
+                showError('passwordError', 'Password must be at least 6 characters');
+                return;
+            }
+            
+            try {
+                // First, verify current password by trying to sign in
+                const user = getCurrentUser();
+                const { error: signInError } = await supabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: currentPassword
+                });
+                
+                if (signInError) {
+                    throw new Error('Current password is incorrect');
+                }
+                
+                // Update password
+                const { error: updateError } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+                
+                if (updateError) throw updateError;
+                
+                showSuccess('passwordMessage', 'Password updated successfully!');
+                resetPasswordForm();
+                
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showError('passwordError', error.message || 'Error updating password');
+            }
+        });
+
+        function resetPasswordForm() {
+            document.getElementById('changePasswordForm').reset();
+            hideMessages();
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.add('show');
+            setTimeout(() => element.classList.remove('show'), 5000);
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.add('show');
+        }
+
+        function hideMessages() {
+            document.querySelectorAll('.success-message, .error-message').forEach(el => {
+                el.classList.remove('show');
+            });
+        }
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                await loadAdminInfo();
+            }
+        });
+    </script>
+</body>
+</html>

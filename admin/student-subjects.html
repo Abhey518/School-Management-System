@@ -22,10 +22,22 @@
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
             <a href="student-subjects.html" class="active">Student Subjects</a>
-            <a href="marks-approval.html">Marks Approval</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
             <a href="timetable.html">Timetable</a>
-            <a href="settings.html">Settings</a>
-            <a href="../index.html">Logout</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="admin-account-settings.html">⚙️ Account Settings</a>
+                    <a href="settings.html">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -166,8 +178,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
     <script src="../shared/api.js"></script>
     <script src="../shared/theme.js"></script>
+    <script src="admin-profile.js"></script>
     <script>
         // Initialize Supabase client
         const supabase = getSupabaseClient();
@@ -491,9 +505,12 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            loadClasses();
-            loadSubjects();
+        document.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                loadClasses();
+                loadSubjects();
+            }
         });
     </script>
 </body>

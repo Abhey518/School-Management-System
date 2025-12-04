@@ -20,16 +20,22 @@
             <a href="teachers.html">Teachers</a>
             <a href="classes.html" class="active">Classes</a>
             <a href="subjects.html">Subjects</a>
-            <a href="marks-approval.html">Marks Approval</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
             <a href="timetable.html">Timetable</a>
-            <div style="position: relative; display: inline-block;">
-                <a href="#" onclick="toggleNotifications(event)" style="position: relative; padding: 0.5rem 0.75rem;">
-                    🔔
-                    <span id="notificationBadge" style="display: none; position: absolute; top: 0; right: 0; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; text-align: center; line-height: 18px; font-weight: bold;"></span>
-                </a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleAdminProfile()">
+                    <span class="profile-icon">👤</span>
+                    <span class="admin-name" id="adminName">Admin</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="adminNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="adminProfileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="admin-account-settings.html">⚙️ Account Settings</a>
+                    <a href="settings.html">🔧 System Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
             </div>
-            <a href="#" onclick="toggleSettings(event)">⚙️</a>
-            <a href="../index.html">Logout</a>
         </div>
     </nav>
 
@@ -211,9 +217,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
     <script src="../shared/api.js"></script>
     <script src="admin.js"></script>
     <script src="admin-navbar.js"></script>
+    <script src="admin-profile.js"></script>
     <script>
         let teachersData = [];
         let studentsData = [];
@@ -517,8 +525,11 @@
         });
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await loadTeachersDropdown();
-            await loadClasses();
+            const isAuth = await checkAuthentication('admin');
+            if (isAuth) {
+                await loadTeachersDropdown();
+                await loadClasses();
+            }
         });
     </script>
 </body>

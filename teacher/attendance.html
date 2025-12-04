@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mark Attendance - SMS</title>
+    <title>Attendance - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../shared/supabase.js"></script>
+    <script src="../shared/auth.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -18,7 +21,19 @@
             <a href="attendance.html" class="active">Attendance</a>
             <a href="marks.html">Marks</a>
             <a href="timetable.html">Timetable</a>
-            <a href="../index.html">Logout</a>
+            <div class="profile-dropdown">
+                <button class="profile-btn" onclick="toggleProfileDropdown()">
+                    <span class="profile-icon">👤</span>
+                    <span class="teacher-name" id="teacherName">Teacher</span>
+                    <span class="dropdown-arrow">▼</span>
+                    <span class="profile-notification-badge hidden" id="teacherNotificationBadge">0</span>
+                </button>
+                <div class="profile-dropdown-content" id="profileDropdown">
+                    <a href="notifications.html">🔔 Notifications</a>
+                    <a href="account-settings.html">⚙️ Account Settings</a>
+                    <a href="#" onclick="logout()">🚪 Logout</a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -345,7 +360,14 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', loadClassesDropdown);
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication first
+            const isAuth = await checkAuthentication('teacher');
+            if (isAuth) {
+                await loadClassesDropdown();
+            }
+        });
     </script>
+    <script src="teacher-nav.js"></script>
 </body>
 </html>

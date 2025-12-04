@@ -222,3 +222,23 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Load pending support tickets count and update badge
+async function loadPendingTicketsCount() {
+    try {
+        const count = await getPendingTicketsCount();
+        const supportLink = document.getElementById('supportLink');
+        
+        if (supportLink) {
+            supportLink.setAttribute('data-count', count);
+        }
+    } catch (error) {
+        console.error('Error loading pending tickets count:', error);
+    }
+}
+
+// Auto-refresh pending tickets count every 30 seconds
+if (typeof getPendingTicketsCount === 'function') {
+    loadPendingTicketsCount();
+    setInterval(loadPendingTicketsCount, 30000);
+}
