@@ -21,9 +21,8 @@
             <a href="teachers.html">Teachers</a>
             <a href="classes.html">Classes</a>
             <a href="subjects.html">Subjects</a>
-            <a href="marks-approval.html" class="active">Marks Approval</a>
+            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Requests</a>
             <a href="timetable.html">Timetable</a>
-            <a href="support-tickets.html" class="notification-badge" id="supportLink" data-count="0">Support</a>
             <div class="profile-dropdown">
                 <button class="profile-btn" onclick="toggleAdminProfile()">
                     <span class="profile-icon">👤</span>
@@ -42,8 +41,18 @@
     </nav>
 
     <div class="container">
-        <h1>Marks Approval</h1>
-        <p class="subtitle">Review and approve marks submitted by teachers</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1 style="margin: 0 0 5px 0;">Marks Approval</h1>
+                <p class="subtitle" style="margin: 0;">Review and approve marks submitted by teachers</p>
+            </div>
+            <button onclick="window.location.href='support-tickets.html?tab=marks'" class="btn btn-primary">
+                ← Back to Marks Approval List
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
         
         <div class="card">
             <!-- Tabs -->
@@ -166,8 +175,10 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        console.log('=== MARKS APPROVAL SCRIPT STARTED ===');
         // Initialize Supabase client
         const supabase = getSupabaseClient();
+        console.log('Supabase client:', supabase);
         
         let currentTab = 'pending';
         let currentSubmissionIds = [];
@@ -212,12 +223,14 @@
                     containerId = 'recheckContainer';
                 }
 
+                console.log('Loading submissions with status:', status);
                 const { data, error } = await supabase
                     .from('student_marks_detailed')
                     .select('*')
                     .eq('approval_status', status)
                     .order('created_at', { ascending: false });
 
+                console.log('Query result - data:', data, 'error:', error);
                 if (error) throw error;
 
                 // Group by class, subject, exam, and teacher
@@ -401,13 +414,13 @@
                 const submission = data[0];
                 
                 document.getElementById('submissionDetails').innerHTML = `
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 0.58fr; gap: 15px;">
                         <div>
                             <strong>Class:</strong> ${submission.class_name}<br>
                             <strong>Subject:</strong> ${submission.subject_name}<br>
                             <strong>Exam:</strong> ${submission.exam_name}
                         </div>
-                        <div>
+                        <div style="padding-left: 40px;">
                             <strong>Teacher:</strong> ${submission.entered_by_teacher}<br>
                             <strong>Status:</strong> ${submission.approval_status}<br>
                             <strong>Submitted:</strong> ${new Date(submission.created_at).toLocaleString()}
@@ -418,10 +431,10 @@
                 const tbody = document.getElementById('marksDetailsTableBody');
                 tbody.innerHTML = data.map(mark => `
                     <tr>
-                        <td>${mark.admission_no}</td>
-                        <td>${mark.student_name}</td>
-                        <td>${mark.marks}</td>
-                        <td>${mark.grade}</td>
+                        <td style="text-align: center;">${mark.admission_no}</td>
+                        <td style="text-align: center;">${mark.student_name}</td>
+                        <td style="text-align: center;">${mark.marks}</td>
+                        <td style="text-align: center;">${mark.grade}</td>
                     </tr>
                 `).join('');
 
@@ -541,9 +554,14 @@
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async () => {
-            const isAuth = await checkAuthentication('admin');
-            if (isAuth) {
-                loadSubmissions();
+            console.log('Marks approval page initializing...');
+            
+            // Try loading submissions directly without auth check for debugging
+            try {
+                console.log('Loading submissions directly...');
+                await loadSubmissions();
+            } catch (error) {
+                console.error('Error during initialization:', error);
             }
         });
     </script>

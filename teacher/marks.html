@@ -259,8 +259,25 @@
         // Initialize Supabase client
         const supabase = getSupabaseClient();
         
-        // For demo purposes - in production this would come from authentication
-        const CURRENT_TEACHER_ID = '123e4567-e89b-12d3-a456-426614174000'; // Replace with actual teacher ID from auth
+        // TODO: Replace with actual teacher ID from authentication
+        // For now, get the first teacher from the database
+        let CURRENT_TEACHER_ID = null;
+        
+        // Initialize teacher ID
+        async function initializeTeacherId() {
+            try {
+                const { data, error } = await supabase
+                    .from('teachers')
+                    .select('id')
+                    .limit(1)
+                    .single();
+                
+                if (error) throw error;
+                CURRENT_TEACHER_ID = data.id;
+            } catch (error) {
+                console.error('Error getting teacher ID:', error);
+            }
+        }
         
         let currentClassId = null;
         let currentSubjectId = null;
@@ -270,6 +287,16 @@
         // Load classes where teacher teaches
         async function loadTeacherClasses() {
             try {
+                // Make sure teacher ID is initialized
+                if (!CURRENT_TEACHER_ID) {
+                    await initializeTeacherId();
+                }
+                
+                if (!CURRENT_TEACHER_ID) {
+                    document.getElementById('selectClass').innerHTML = '<option value="">No teacher found</option>';
+                    return;
+                }
+                
                 // Get classes where this teacher has been assigned through timetable
                 const { data, error } = await supabase
                     .from('timetable')
@@ -329,6 +356,7 @@
 
             try {
                 // Get subjects taught by this teacher in this class
+                console.log('Loading subjects for class:', classSelect.value, 'teacher:', CURRENT_TEACHER_ID);
                 const { data, error } = await supabase
                     .from('timetable')
                     .select(`
@@ -344,6 +372,8 @@
                     .not('subject_id', 'is', null);
 
                 if (error) throw error;
+                
+                console.log('Timetable data returned:', data);
 
                 // Get unique subjects
                 const uniqueSubjects = [];
@@ -541,8 +571,27 @@
 
                 if (insertError) throw insertError;
 
-                // TODO: Create notifications for admin
-                // This will be implemented in the notifications section
+                // Create notification for admin
+                try {
+                    const classSelect = document.getElementById('selectClass');
+                    const subjectSelect = document.getElementById('selectSubject');
+                    const className = classSelect.options[classSelect.selectedIndex].text;
+                    const subjectName = subjectSelect.options[subjectSelect.selectedIndex].text;
+                    
+                    await supabase
+                        .from('notifications')
+                        .insert({
+                            teacher_id: null,  // null means it's for admin
+                            type: 'marks_submitted',
+                            title: 'New Marks Submitted for Approval',
+                            message: `${marksToSubmit.length} marks submitted for ${className} - ${subjectName} (${currentExamName})`,
+                            link: '/admin/marks-approval.html',
+                            is_read: false
+                        });
+                } catch (notifError) {
+                    console.error('Error creating notification:', notifError);
+                    // Don't fail the whole operation if notification fails
+                }
 
                 alert('Marks submitted successfully! Waiting for admin approval.');
                 resetMarksForm();

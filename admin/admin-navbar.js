@@ -234,30 +234,30 @@ async function loadNotifications() {
     try {
         const supabase = getSupabaseClient();
         
-        // Get pending marks submissions
-        const { data: marksData, error: marksError } = await supabase
-            .from('marks')
-            .select(`
-                id,
-                created_at,
-                students (name_with_initials),
-                subjects (subject_name),
-                teachers (name_with_initials)
-            `)
-            .eq('status', 'Pending')
-            .order('created_at', { ascending: false });
+        // Get notifications for admin (teacher_id is null for admin notifications)
+        const { data: notifData, error: notifError } = await supabase
+            .from('notifications')
+            .select('*')
+            .is('teacher_id', null)
+            .eq('is_read', false)
+            .order('created_at', { ascending: false })
+            .limit(10);
 
-        if (marksError) throw marksError;
-
-        notifications = marksData.map(mark => ({
-            id: `mark_${mark.id}`,
-            type: 'marks_pending',
-            title: 'New Marks Submission',
-            message: `${mark.teachers?.name_with_initials || 'A teacher'} submitted marks for ${mark.students?.name_with_initials || 'a student'} in ${mark.subjects?.subject_name || 'a subject'}`,
-            time: new Date(mark.created_at),
-            read: false,
-            link: 'marks-approval.html'
-        }));
+        if (notifError) {
+            console.error('Notification query error:', notifError);
+            // Don't throw, just set empty notifications
+            notifications = [];
+        } else {
+            notifications = notifData.map(notif => ({
+                id: notif.id,
+                type: notif.type,
+                title: notif.title,
+                message: notif.message,
+                time: new Date(notif.created_at),
+                read: notif.is_read,
+                link: notif.link || '/admin/marks-approval.html'
+            }));
+        }
 
         // Load read status from localStorage
         const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');

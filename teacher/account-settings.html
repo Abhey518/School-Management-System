@@ -6,6 +6,7 @@
     <title>Account Settings - SMS Teacher</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <script src="../shared/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
@@ -198,7 +199,7 @@
             <h2>Support & Help</h2>
             <p style="color: #666; margin-bottom: 20px;">Need help or have a question? Send a request to the administrator.</p>
             
-            <div id="ticketMessage" class="success-message"></div>
+            <div id="ticketSuccess" class="success-message"></div>
             <div id="ticketError" class="error-message"></div>
             
             <form id="supportTicketForm">
@@ -399,7 +400,7 @@
             const priority = document.getElementById('ticketPriority').value;
             
             // Clear previous messages
-            document.getElementById('ticketMessage').classList.remove('show');
+            document.getElementById('ticketSuccess').classList.remove('show');
             document.getElementById('ticketError').classList.remove('show');
             
             try {
@@ -419,7 +420,7 @@
                 
                 await createSupportTicket(ticketData);
                 
-                showSuccess('ticketMessage', 'Your request has been sent to the administrator successfully!');
+                showSuccess('ticketSuccess', 'Your request has been sent to the administrator successfully!');
                 document.getElementById('supportTicketForm').reset();
                 
                 // Reload tickets list

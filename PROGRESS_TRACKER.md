@@ -1147,6 +1147,148 @@ GROUP BY c.id, c.grade, c.class_letter, c.class_name,
 
 ---
 
+### Session 9 (Continued) - December 5, 2025
+
+#### **Completed Tasks**
+
+##### 1. School Banner Customization System ✅
+
+- ✅ **Banner Color Theme Selection** (admin/settings.html):
+  - 9 preset gradient themes: Purple, Blue, Green, Red, Orange, Teal, Indigo, Pink, Dark
+  - Custom color option with color picker
+  - Live preview on settings page
+  - Gradient generation with `getBannerGradient()` function
+  - Settings persist in localStorage
+- ✅ **Banner Text Color Customization**:
+  - 6 preset colors: White, Black, Blue, Green, Red, Yellow
+  - Custom color option with color picker
+  - `getBannerTextColor()` function for color application
+  - Synchronized across admin and teacher dashboards
+- ✅ **Background Color Customization**:
+  - 7 preset colors: Light Blue, Light Purple, Light Green, Light Yellow, Light Pink, Light Gray, Cream
+  - Custom color option with color picker
+  - 4 opacity levels: Subtle (10%), Light (20%), Medium (30%), Regular (40%)
+  - RGB color mixing with opacity in `getBackgroundColor()` function
+  - Applied via shared/theme.js to all pages automatically
+- ✅ **Banner Image Upload**:
+  - File input for custom banner images
+  - Base64 encoding for localStorage storage
+  - Applied to both admin and teacher dashboards
+- ✅ **Banner Refresh Persistence Fix**:
+  - Removed inline styles from HTML (background, color)
+  - Added unique IDs: schoolBannerContainer, schoolNameDisplay, academicYearText
+  - Banner starts hidden (opacity: 0) with empty content
+  - JavaScript loads all settings then fades in (0.3s transition)
+  - Eliminates flash of default purple banner and white text
+
+##### 2. Theme Synchronization Across Portals ✅
+
+- ✅ **Extended Theme.js Coverage**:
+  - Added theme.js to all 6 teacher portal pages:
+    - teacher/attendance.html
+    - teacher/notifications.html
+    - teacher/timetable.html
+    - teacher/account-settings.html
+    - (dashboard.html and marks.html already had it)
+  - Added theme.js to admin/admin-account-settings.html
+- ✅ **Automatic Theme Application**:
+  - Dark/light mode synchronizes automatically
+  - Background colors with opacity apply system-wide
+  - Theme preferences set in admin settings immediately affect all pages
+  - No need for page refresh or manual sync
+
+##### 3. Student Attendance Report Enhancements ✅
+
+- ✅ **Print Report Layout Optimization** (admin/students.html):
+  - Header: School name and report title centered
+  - Student information section with gray background:
+    - Student Name (full width)
+    - Grid layout with `1fr 0.43fr` columns for proper proportions
+    - Name with Initials | Admission No (right aligned)
+    - Class | Report Period (right aligned)
+  - Vertical spacing standardization (0.5rem gaps)
+  - Fixed unclosed div tag in Student Name row
+  - Improved alignment and visual organization
+- ✅ **Statistics Cards**:
+  - 4 cards: Total Days, Present, Absent, Attendance %
+  - Color-coded backgrounds for quick visual reference
+  - Large numbers (24px) for emphasis
+- ✅ **Daily Records Table**:
+  - Date, Day, Status columns
+  - Present (✓) in green, Absent (✗) in red
+  - Professional table styling with borders
+- ✅ **Print Functionality**:
+  - Print button generates clean print-ready report
+  - Timestamp footer included
+  - Professional layout for school records
+
+##### 4. UI Consistency and Bug Fixes ✅
+
+- ✅ **Theme Application to Account Settings**:
+  - Both admin and teacher account settings pages now apply theme
+  - Background colors, dark mode, all work consistently
+  - Matches rest of portal styling
+- ✅ **Banner Loading Optimization**:
+  - Removed default text content from HTML ("School Name", "2025")
+  - JavaScript populates content after loading settings
+  - Smooth fade-in transition prevents visual glitches
+  - Both admin and teacher dashboards updated
+
+#### **Files Modified in This Sub-Session**
+
+- `admin/settings.html` - Banner customization, background colors, UI improvements
+- `admin/dashboard.html` - Banner loading fix, opacity transition, empty defaults
+- `teacher/dashboard.html` - Same banner fixes as admin
+- `admin/students.html` - Attendance report layout, grid proportions, spacing
+- `admin/admin-account-settings.html` - Added theme.js
+- `teacher/attendance.html` - Added theme.js
+- `teacher/notifications.html` - Added theme.js
+- `teacher/timetable.html` - Added theme.js
+- `teacher/account-settings.html` - Added theme.js
+- `shared/theme.js` - Enhanced background color application
+- `shared/styles.css` - Banner customization styles, opacity controls
+
+#### **Technical Implementation Details**
+
+**Banner System**:
+
+- Storage: localStorage keys (bannerColorTheme, customBannerColor, bannerTextColor, customTextColor, bannerImage)
+- Functions: `getBannerGradient()`, `getBannerTextColor()`, `loadSchoolBanner()`
+- CSS transitions: 0.3s opacity fade-in for smooth loading
+- ID-based targeting: getElementById() for precise element control
+
+**Background Colors**:
+
+- RGB values stored for each preset color
+- Opacity mixing: `rgba(R, G, B, opacity)` where opacity = 0.1, 0.2, 0.3, or 0.4
+- Applied to body background via theme.js on page load
+- Persists across all pages automatically
+
+**Theme Synchronization**:
+
+- Single source of truth: localStorage in admin portal
+- shared/theme.js reads settings on every page load
+- No API calls needed - pure client-side synchronization
+- Instant updates across browser tabs
+
+#### **Summary of Session 9 Continuation**
+
+- **Focus**: Visual customization, theme consistency, report layout, user experience polish
+- **Key Achievements**:
+  - Complete school branding system with banner and background customization
+  - Eliminated visual glitches on page refresh
+  - System-wide theme synchronization between admin and teacher portals
+  - Professional print-ready attendance reports
+  - 100% theme coverage across all pages (11 admin + 6 teacher = 17 pages)
+- **User Experience Improvements**:
+  - Schools can fully customize visual identity
+  - Consistent look and feel across all pages
+  - Smooth transitions without flickering
+  - Print-ready reports for official documentation
+- **Status**: All visual customization features complete, system ready for school deployment with full branding capabilities
+
+---
+
 ## Next Steps (See TODO.md for detailed list)
 
 1. **Complete Marks Approval Integration**: Integrate marks data into Teacher Requests page

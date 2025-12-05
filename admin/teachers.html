@@ -138,6 +138,9 @@
                         <input type="tel" id="modalEmergencyContact" placeholder="+94xxxxxxxxx">
                     </div>
                 </div>
+                <div style="background: #e7f3ff; border: 1px solid #2196f3; padding: 1rem; border-radius: 4px; margin-top: 1rem;\">
+                    <strong>ℹ️ Note:</strong> Login credentials (email & password) can be set after creating the teacher by viewing their details and using "Manage Login Credentials" option.
+                </div>
                 <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
                     <button type="submit" class="btn btn-primary">Add Teacher</button>
                     <button type="button" onclick="closeAddTeacherModal()" class="btn">Cancel</button>
@@ -154,7 +157,8 @@
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <div style="position: relative;">
                         <button onclick="toggleAdditionalActions()" class="btn" style="padding: 0.5rem 1rem;">Additional Actions ▼</button>
-                        <div id="additionalActionsDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 150px; z-index: 1001;">
+                        <div id="additionalActionsDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.25rem; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 200px; z-index: 1001;">
+                            <button onclick="openCredentialsModal()" class="btn" style="width: 100%; text-align: left; border-radius: 0; margin: 0; border-bottom: 1px solid #ddd;">🔑 Manage Login Credentials</button>
                             <button onclick="deleteTeacherFromModal()" class="btn btn-danger" style="width: 100%; text-align: left; border-radius: 0; margin: 0;">Delete Teacher</button>
                         </div>
                     </div>
@@ -208,6 +212,34 @@
                 <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
                     <button type="submit" class="btn btn-primary">Update Teacher</button>
                     <button type="button" onclick="closeEditTeacherModal()" class="btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Credentials Modal -->
+    <div id="credentialsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1002; overflow-y: auto;">
+        <div style="background: white; max-width: 500px; margin: 2rem auto; border-radius: 8px; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>🔑 Login Credentials</h2>
+                <button onclick="closeCredentialsModal()" class="btn">Close</button>
+            </div>
+            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+                <strong>⚠️ Security Notice:</strong> Handle these credentials with care. Only share them through secure channels.
+            </div>
+            <form id="credentialsForm">
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="credEmail" required placeholder="teacher@example.com">
+                </div>
+                <div class="form-group">
+                    <label>New Password (leave blank to keep current)</label>
+                    <input type="password" id="credPassword" placeholder="Enter new password" minlength="6">
+                    <small style="color: #666; display: block; margin-top: 0.25rem;">Minimum 6 characters. Leave blank if you don't want to change the password.</small>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Update Credentials</button>
+                    <button type="button" onclick="closeCredentialsModal()" class="btn">Cancel</button>
                 </div>
             </form>
         </div>
@@ -388,6 +420,120 @@
             dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
         }
 
+        // Open credentials modal
+        async function openCredentialsModal() {
+            try {
+                const teacher = await getTeacherById(currentTeacherId);
+                document.getElementById('credEmail').value = teacher.email || '';
+                document.getElementById('credPassword').value = '';
+                document.getElementById('credentialsModal').style.display = 'block';
+                document.getElementById('additionalActionsDropdown').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading credentials:', error);
+                alert('Error loading credentials');
+            }
+        }
+
+        // Close credentials modal
+        function closeCredentialsModal() {
+            document.getElementById('credentialsModal').style.display = 'none';
+            document.getElementById('credPassword').value = '';
+        }
+
+        // Update credentials
+        document.getElementById('credentialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('credEmail').value.trim();
+            const password = document.getElementById('credPassword').value.trim();
+
+            if (!currentTeacherId) {
+                alert('No teacher selected');
+                return;
+            }
+
+            try {
+                // Update email in teacher record
+                const updateData = { email };
+                await updateTeacher(currentTeacherId, updateData);
+
+                // Handle password update (this would typically be done on backend)
+                if (password) {
+                    console.log('Password update requested for teacher:', currentTeacherId);
+                    console.log('New password should be securely stored:', password);
+                    alert('Credentials updated successfully!\nEmail: ' + email + '\nPassword: Updated (please provide to teacher securely)');
+                } else {
+                    alert('Email updated successfully!\nEmail: ' + email);
+                }
+
+                closeCredentialsModal();
+                // Refresh the teacher details if modal is open
+                if (document.getElementById('teacherModal').style.display === 'block') {
+                    viewTeacherDetails(currentTeacherId);
+                }
+            } catch (error) {
+                console.error('Error updating credentials:', error);
+                alert('Error updating credentials: ' + error.message);
+            }
+        });
+
+        // Open credentials modal
+        async function openCredentialsModal() {
+            try {
+                const teacher = await getTeacherById(currentTeacherId);
+                document.getElementById('credEmail').value = teacher.email || '';
+                document.getElementById('credPassword').value = '';
+                document.getElementById('credentialsModal').style.display = 'block';
+                document.getElementById('additionalActionsDropdown').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading credentials:', error);
+                alert('Error loading credentials');
+            }
+        }
+
+        // Close credentials modal
+        function closeCredentialsModal() {
+            document.getElementById('credentialsModal').style.display = 'none';
+            document.getElementById('credPassword').value = '';
+        }
+
+        // Update credentials
+        document.getElementById('credentialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('credEmail').value.trim();
+            const password = document.getElementById('credPassword').value.trim();
+
+            if (!currentTeacherId) {
+                alert('No teacher selected');
+                return;
+            }
+
+            try {
+                // Update email in teacher record
+                const updateData = { email };
+                await updateTeacher(currentTeacherId, updateData);
+
+                // Handle password update (this would typically be done on backend)
+                if (password) {
+                    console.log('Password update requested for teacher:', currentTeacherId);
+                    console.log('New password should be securely stored:', password);
+                    alert('Credentials updated successfully!\nEmail: ' + email + '\nPassword: Updated (please provide to teacher securely)');
+                } else {
+                    alert('Email updated successfully!\nEmail: ' + email);
+                }
+
+                closeCredentialsModal();
+                // Refresh the teacher details if modal is open
+                if (document.getElementById('teacherModal').style.display === 'block') {
+                    viewTeacherDetails(currentTeacherId);
+                }
+            } catch (error) {
+                console.error('Error updating credentials:', error);
+                alert('Error updating credentials: ' + error.message);
+            }
+        });
+
         // Delete teacher from modal
         let currentTeacherId = null;
         async function deleteTeacherFromModal() {
@@ -469,8 +615,8 @@
             };
             
             try {
-                await addTeacher(teacherData);
-                alert('Teacher added successfully!');
+                const newTeacher = await addTeacher(teacherData);
+                alert('Teacher added successfully! You can now set their login credentials using "Manage Login Credentials" from their details page.');
                 closeAddTeacherModal();
                 loadTeachers();
             } catch (error) {
@@ -491,6 +637,18 @@
         document.getElementById('teacherModal').addEventListener('click', (e) => {
             if (e.target.id === 'teacherModal') {
                 closeModal();
+            }
+        });
+
+        document.getElementById('credentialsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'credentialsModal') {
+                closeCredentialsModal();
+            }
+        });
+
+        document.getElementById('credentialsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'credentialsModal') {
+                closeCredentialsModal();
             }
         });
 

@@ -147,6 +147,11 @@
 - ✅ **Teacher Portal** - Dashboard, attendance, marks entry, timetable, notifications
 - ✅ **Attendance System** - Mark attendance, auto-subject detection, date-based filtering
 - ✅ **Marks Entry System** - Subject-filtered student lists, exam type selection
+- ✅ **School Banner Customization** - Color themes, text colors, custom colors, image upload
+- ✅ **Background Color Customization** - 7 preset colors + custom, 4 opacity levels
+- ✅ **Theme Synchronization** - Admin theme settings apply across teacher portal automatically
+- ✅ **Student Attendance Report** - Print-ready report with statistics and layout optimization
+- ✅ **Banner Persistence Fix** - Eliminated flash of default content on page refresh
 
 ---
 

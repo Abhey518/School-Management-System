@@ -6,6 +6,7 @@
     <title>Teacher Dashboard - SMS</title>
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
+    <script src="../shared/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
@@ -39,6 +40,15 @@
 
     <div class="container">
         <h1>Teacher Dashboard</h1>
+        
+        <!-- School Banner Section -->
+        <div id="schoolBannerContainer" style="border-radius: 12px; padding: 2rem; margin: 2rem 0; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 id="schoolNameDisplay" style="margin: 0 0 1rem 0; font-size: 2rem; font-weight: 600;">School Name</h2>
+            <div style="background: white; border-radius: 8px; overflow: hidden; margin: 0 auto; max-width: 100%; height: 250px; display: flex; align-items: center; justify-content: center;">
+                <img id="schoolBannerImage" src="https://images.unsplash.com/photo-1562774053-701939374585?w=1200&h=300&fit=crop" alt="School Banner" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <p id="academicYearText" style="margin: 1rem 0 0 0; font-size: 0.95rem;">Academic Year: <span id="academicYearDisplay">2025</span></p>
+        </div>
         
         <div class="stats-grid">
             <div class="stat-card">
@@ -93,9 +103,73 @@
     <script src="teacher.js"></script>
     <script src="teacher-nav.js"></script>
     <script>
+        // Get banner gradient based on color theme
+        function getBannerGradient(theme, customColor) {
+            const gradients = {
+                'purple': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'blue': 'linear-gradient(135deg, #2196F3 0%, #1565C0 100%)',
+                'green': 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
+                'blue-white': 'linear-gradient(135deg, #2196F3 0%, #E3F2FD 100%)',
+                'green-white': 'linear-gradient(135deg, #4CAF50 0%, #E8F5E9 100%)',
+                'green-yellow-white': 'linear-gradient(135deg, #4CAF50 0%, #FFEB3B 50%, #FFFFFF 100%)',
+                'red-white': 'linear-gradient(135deg, #F44336 0%, #FFEBEE 100%)',
+                'orange': 'linear-gradient(135deg, #FF9800 0%, #E65100 100%)',
+                'custom': customColor ? `linear-gradient(135deg, ${customColor} 0%, ${customColor}dd 100%)` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            };
+            return gradients[theme] || gradients['purple'];
+        }
+
+        // Get text color for banner
+        function getBannerTextColor(textTheme, customColor) {
+            const colors = {
+                'white': '#FFFFFF',
+                'black': '#000000',
+                'dark-blue': '#1565C0',
+                'dark-green': '#2E7D32',
+                'navy': '#000080',
+                'custom-text': customColor || '#FFFFFF'
+            };
+            return colors[textTheme] || colors['white'];
+        }
+
+        // Load school banner information
+        function loadSchoolBanner() {
+            const schoolName = localStorage.getItem('schoolName') || 'Welcome to Your School';
+            const academicYear = localStorage.getItem('academicYear') || '2025';
+            const bannerImage = localStorage.getItem('bannerImage');
+            const bannerColorTheme = localStorage.getItem('bannerColorTheme') || 'purple';
+            const customBannerColor = localStorage.getItem('customBannerColor') || '';
+            const bannerTextColor = localStorage.getItem('bannerTextColor') || 'white';
+            const customTextColor = localStorage.getItem('customTextColor') || '';
+            
+            document.getElementById('schoolNameDisplay').textContent = schoolName;
+            document.getElementById('academicYearDisplay').textContent = academicYear;
+            
+            // Use uploaded banner if available, otherwise use default
+            if (bannerImage) {
+                document.getElementById('schoolBannerImage').src = bannerImage;
+            }
+            
+            // Apply selected color theme to banner
+            const bannerContainer = document.getElementById('schoolBannerContainer');
+            if (bannerContainer) {
+                bannerContainer.style.background = getBannerGradient(bannerColorTheme, customBannerColor);
+            }
+            
+            // Apply text color to banner text elements
+            const textColor = getBannerTextColor(bannerTextColor, customTextColor);
+            const schoolNameEl = document.getElementById('schoolNameDisplay');
+            const academicYearTextEl = document.getElementById('academicYearText');
+            if (schoolNameEl) schoolNameEl.style.color = textColor;
+            if (academicYearTextEl) academicYearTextEl.style.color = textColor;
+        }
+
         // Load dashboard statistics
         async function loadDashboardStats() {
             try {
+                // Load school banner
+                loadSchoolBanner();
+                
                 const students = await getStudents();
                 const classes = await getClasses();
                 

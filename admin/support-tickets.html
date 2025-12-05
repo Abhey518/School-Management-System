@@ -220,7 +220,7 @@
         async function loadTickets() {
             try {
                 allTickets = await getAllSupportTickets();
-                updateStats();
+                await updateStats();
                 displayTickets(currentFilter);
             } catch (error) {
                 console.error('Error loading tickets:', error);
@@ -230,15 +230,35 @@
         }
 
         // Update statistics
-        function updateStats() {
+        async function updateStats() {
             const pending = allTickets.filter(t => t.status === 'pending').length;
             const inProgress = allTickets.filter(t => t.status === 'in_progress').length;
             const resolved = allTickets.filter(t => t.status === 'resolved').length;
             
-            document.getElementById('pendingCount').textContent = pending;
+            // Get pending marks count
+            let pendingMarksCount = 0;
+            try {
+                const { data, error } = await supabase
+                    .from('student_marks_detailed')
+                    .select('class_id, subject_id, exam_name', { count: 'exact' })
+                    .eq('approval_status', 'Pending');
+                
+                if (!error && data) {
+                    // Count unique submissions (group by class, subject, exam)
+                    const uniqueSubmissions = new Set();
+                    data.forEach(mark => {
+                        uniqueSubmissions.add(`${mark.class_id}_${mark.subject_id}_${mark.exam_name}`);
+                    });
+                    pendingMarksCount = uniqueSubmissions.size;
+                }
+            } catch (error) {
+                console.error('Error counting marks:', error);
+            }
+            
+            document.getElementById('pendingCount').textContent = pending + pendingMarksCount;
             document.getElementById('inProgressCount').textContent = inProgress;
             document.getElementById('resolvedCount').textContent = resolved;
-            document.getElementById('totalCount').textContent = allTickets.length;
+            document.getElementById('totalCount').textContent = allTickets.length + pendingMarksCount;
         }
 
         // Filter tickets
@@ -251,20 +271,84 @@
             });
             event.target.classList.add('active');
             
-            displayTickets(status);
+            if (status === 'marks') {
+                loadAndDisplayMarks();
+            } else {
+                displayTickets(status);
+            }
         }
 
         // Display tickets
-        function displayTickets(filter) {
+        async function displayTickets(filter) {
             const container = document.getElementById('ticketsContainer');
+            
+            // Save current textarea values before refreshing
+            const textareaValues = {};
+            document.querySelectorAll('textarea[id^="response-"]').forEach(textarea => {
+                if (textarea.value) {
+                    textareaValues[textarea.id] = textarea.value;
+                }
+            });
             
             let filteredTickets = allTickets;
             if (filter !== 'all') {
                 filteredTickets = allTickets.filter(t => t.status === filter);
             }
             
-            if (filteredTickets.length === 0) {
-                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No tickets found.</p>';
+            // If showing all requests, also include marks
+            let marksHTML = '';
+            if (filter === 'all') {
+                try {
+                    const { data, error } = await supabase
+                        .from('student_marks_detailed')
+                        .select('*')
+                        .eq('approval_status', 'Pending')
+                        .order('created_at', { ascending: false });
+
+                    if (!error && data && data.length > 0) {
+                        // Group by class, subject, exam
+                        const grouped = {};
+                        data.forEach(mark => {
+                            const key = `${mark.class_id}_${mark.subject_id}_${mark.exam_name}`;
+                            if (!grouped[key]) {
+                                grouped[key] = {
+                                    class_name: mark.class_name,
+                                    subject_name: mark.subject_name,
+                                    exam_name: mark.exam_name,
+                                    teacher_name: mark.entered_by_teacher,
+                                    created_at: mark.created_at,
+                                    count: 0
+                                };
+                            }
+                            grouped[key].count++;
+                        });
+
+                        Object.values(grouped).forEach(submission => {
+                            const date = new Date(submission.created_at).toLocaleDateString();
+                            marksHTML += `
+                                <div class="ticket-card" style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                        <h3 style="margin: 0; color: #2c5aa0;">${submission.class_name} - ${submission.subject_name}</h3>
+                                        <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 14px;">📊 Marks</span>
+                                    </div>
+                                    <p style="color: #666; margin: 5px 0;">Exam: ${submission.exam_name}</p>
+                                    <p style="color: #666; margin: 5px 0;">Teacher: ${submission.teacher_name}</p>
+                                    <p style="color: #666; margin: 5px 0;">${submission.count} students • ${date}</p>
+                                    <button onclick="viewMarksDetails('${submission.class_name}', '${submission.subject_name}', '${submission.exam_name}')" 
+                                            style="margin-top: 10px; background: #1976d2; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                                        View Details
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading marks:', error);
+                }
+            }
+            
+            if (filteredTickets.length === 0 && !marksHTML) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No requests found.</p>';
                 return;
             }
             
@@ -347,7 +431,16 @@
                 `;
             });
             
-            container.innerHTML = html;
+            // Combine marks and tickets HTML
+            container.innerHTML = marksHTML + html;
+            
+            // Restore textarea values after refresh
+            Object.keys(textareaValues).forEach(id => {
+                const textarea = document.getElementById(id);
+                if (textarea) {
+                    textarea.value = textareaValues[id];
+                }
+            });
         }
 
         // Respond to ticket
@@ -407,15 +500,111 @@
             }
         }
 
+        // Load and display marks approval
+        async function loadAndDisplayMarks() {
+            const container = document.getElementById('ticketsContainer');
+            container.innerHTML = '<p style="text-align: center; padding: 40px;">Loading marks...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('student_marks_detailed')
+                    .select('*')
+                    .eq('approval_status', 'Pending')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Group by class, subject, exam
+                const grouped = {};
+                data.forEach(mark => {
+                    const key = `${mark.class_id}_${mark.subject_id}_${mark.exam_name}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            class_name: mark.class_name,
+                            subject_name: mark.subject_name,
+                            exam_name: mark.exam_name,
+                            teacher_name: mark.entered_by_teacher,
+                            created_at: mark.created_at,
+                            marks: [],
+                            count: 0
+                        };
+                    }
+                    grouped[key].marks.push(mark);
+                    grouped[key].count++;
+                });
+
+                const submissions = Object.values(grouped);
+
+                if (submissions.length === 0) {
+                    container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No pending marks for approval.</p>';
+                    return;
+                }
+
+                let html = '<div style="display: grid; gap: 20px;">';
+                submissions.forEach(submission => {
+                    const date = new Date(submission.created_at).toLocaleDateString();
+                    html += `
+                        <div class="ticket-card" style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                                <div>
+                                    <h3 style="margin: 0 0 8px 0;">${submission.class_name} - ${submission.subject_name}</h3>
+                                    <p style="color: #666; margin: 0;">Exam: ${submission.exam_name}</p>
+                                    <p style="color: #666; margin: 5px 0 0 0;">Teacher: ${submission.teacher_name}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 12px; font-size: 14px;">Pending</span>
+                                    <p style="color: #999; margin: 8px 0 0 0; font-size: 14px;">${date}</p>
+                                </div>
+                            </div>
+                            <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+                                <strong>${submission.count} students</strong> submitted
+                            </div>
+                            <button onclick="viewMarksDetails('${submission.class_name}', '${submission.subject_name}', '${submission.exam_name}')" 
+                                    style="background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                                View Details & Approve
+                            </button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading marks:', error);
+                container.innerHTML = '<p style="color: #f44336; text-align: center;">Error loading marks. Please try again.</p>';
+            }
+        }
+
+        // View marks details (redirect to marks-approval page)
+        function viewMarksDetails(className, subjectName, examName) {
+            window.location.href = `marks-approval.html?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subjectName)}&exam=${encodeURIComponent(examName)}`;
+        }
+
         // Initialize page
         window.addEventListener('DOMContentLoaded', async () => {
             const isAuth = await checkAuthentication('admin');
             if (isAuth) {
                 await loadTickets();
                 
+                // Check if we should open marks approval tab
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('tab') === 'marks') {
+                    // Simulate clicking the marks approval tab
+                    const marksTab = Array.from(document.querySelectorAll('.filter-tab')).find(tab => 
+                        tab.textContent.includes('Marks Approval')
+                    );
+                    if (marksTab) {
+                        marksTab.click();
+                    }
+                }
+                
                 // Auto-refresh every 30 seconds
                 setInterval(async () => {
-                    await loadTickets();
+                    if (currentFilter !== 'marks') {
+                        await loadTickets();
+                    } else {
+                        await loadAndDisplayMarks();
+                    }
                 }, 30000);
             }
         });
