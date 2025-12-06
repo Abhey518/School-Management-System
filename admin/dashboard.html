@@ -191,6 +191,7 @@
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
     <script src="../shared/api.js"></script>
+    <script src="../shared/loading.js"></script>
     <script src="admin.js"></script>
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
@@ -210,6 +211,9 @@
         // Load dashboard statistics
         async function loadDashboardStats() {
             try {
+                // Show loading overlay while fetching data
+                showLoading('Loading dashboard data...');
+                
                 // Load school settings for banner
                 loadSchoolBanner();
                 
@@ -221,15 +225,37 @@
                 document.getElementById('totalTeachers').textContent = teachers.length;
                 document.getElementById('totalClasses').textContent = classes.length;
                 
-                // Calculate today's attendance
+                // Calculate today's attendance across all classes
                 const today = new Date().toISOString().split('T')[0];
-                const attendance = await getAttendanceByDate(today);
-                if (students.length > 0) {
-                    const attendanceRate = (attendance.filter(a => a.status).length / students.length * 100).toFixed(0);
-                    document.getElementById('todayAttendance').textContent = attendanceRate + '%';
+                let totalPresent = 0;
+                let totalStudents = 0;
+                
+                // Get attendance for each class and aggregate
+                for (const classItem of classes) {
+                    try {
+                        const classAttendance = await getAttendanceByClassAndDate(classItem.id, today);
+                        if (classAttendance && classAttendance.length > 0) {
+                            totalPresent += classAttendance.filter(a => a.status === true || a.status === 'present').length;
+                            totalStudents += classAttendance.length;
+                        }
+                    } catch (err) {
+                        console.log('No attendance data for class:', classItem.class_name);
+                    }
                 }
+                
+                if (totalStudents > 0) {
+                    const attendanceRate = ((totalPresent / totalStudents) * 100).toFixed(0);
+                    document.getElementById('todayAttendance').textContent = attendanceRate + '%';
+                } else {
+                    document.getElementById('todayAttendance').textContent = 'N/A';
+                }
+                
+                // Hide loading overlay
+                hideLoading();
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
+                hideLoading();
+                showToast('Error loading dashboard data', 'error');
             }
         }
 

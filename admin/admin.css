@@ -415,3 +415,59 @@ body.dark-theme .calendar-day {
 body.dark-theme .calendar-day:hover {
     background: #374151;
 }
+
+/* ============= ADMIN MOBILE RESPONSIVENESS ============= */
+
+@media (max-width: 1024px) {
+    .entity-card {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+
+    .admin-actions {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .entity-card {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-header {
+        padding: 20px;
+    }
+
+    .admin-card {
+        padding: 15px;
+    }
+
+    /* Calendar adjustments for mobile */
+    .calendar-card {
+        padding: 1rem;
+    }
+
+    .calendar-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .calendar-nav-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+    }
+
+    .calendar-weekdays div {
+        font-size: 0.75rem;
+        padding: 0.3rem;
+    }
+
+    .calendar-day {
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .calendar-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

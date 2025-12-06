@@ -689,18 +689,39 @@ async function getAttendanceByClassAndDate(classId, date) {
             return [];
         }
 
+        // First, get all student IDs for this class
+        const { data: students, error: studentsError } = await client
+            .from('students')
+            .select('id')
+            .eq('class_id', classId);
+
+        if (studentsError) {
+            console.error('Error fetching students:', studentsError);
+            return [];
+        }
+        
+        if (!students || students.length === 0) {
+            console.log('No students found for class:', classId);
+            return [];
+        }
+
+        const studentIds = students.map(s => s.id);
+
+        // Then, get attendance for those students on the specified date
         const { data, error } = await client
             .from('attendance')
-            .select('*, students(full_name, name_with_initials), subjects(subject_name)')
+            .select('student_id, status, date')
             .eq('date', date)
-            .in('student_id', 
-                client.from('students').select('id').eq('class_id', classId)
-            );
+            .in('student_id', studentIds);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Error fetching attendance:', error);
+            return [];
+        }
+        
         return data || [];
     } catch (error) {
-        console.error('Error fetching attendance:', error);
+        console.error('Error in getAttendanceByClassAndDate:', error);
         return [];
     }
 }

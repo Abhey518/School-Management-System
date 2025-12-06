@@ -488,3 +488,89 @@ body.dark-theme .calendar-day {
 body.dark-theme .calendar-day:hover {
     background: #374151;
 }
+
+/* ============= TEACHER MOBILE RESPONSIVENESS ============= */
+
+@media (max-width: 1024px) {
+    .attendance-grid {
+        gap: 8px;
+    }
+
+    .attendance-row {
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+
+    .attendance-status {
+        justify-content: center;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-header {
+        padding: 20px 15px;
+    }
+
+    .attendance-row {
+        padding: 10px;
+    }
+
+    .attendance-status {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    /* Schedule list mobile */
+    .schedule-list {
+        gap: 10px;
+    }
+
+    .schedule-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+
+    .schedule-item .time {
+        width: 100%;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .schedule-item .subject {
+        width: 100%;
+    }
+
+    /* Calendar mobile adjustments */
+    .calendar-card {
+        padding: 1rem;
+    }
+
+    .calendar-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .calendar-nav-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+    }
+
+    .calendar-weekdays div {
+        font-size: 0.75rem;
+        padding: 0.3rem;
+    }
+
+    .calendar-day {
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .calendar-legend {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
