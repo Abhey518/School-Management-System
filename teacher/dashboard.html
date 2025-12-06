@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
@@ -69,30 +70,54 @@
             </div>
         </div>
 
-        <div class="quick-actions">
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: 400px 1fr; gap: 2rem; margin-top: 2rem;">
+            <!-- Academic Calendar -->
+            <div class="calendar-card">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)" class="calendar-nav-btn">‹</button>
+                    <h2 id="calendarMonth"></h2>
+                    <button onclick="changeMonth(1)" class="calendar-nav-btn">›</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                    <div>Sun</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #667eea;"></span>
+                        <span>Today</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgba(255, 107, 107, 0.3);"></span>
+                        <span>Weekend</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="card" style="margin-bottom: 0; align-self: start;">
+                <h2>Today's Schedule</h2>
+                <div class="schedule-list" id="todaySchedule">
+                    <div style="text-align: center; padding: 1.5rem; color: #999;">
+                        Loading schedule...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" style="margin-top: 2rem;">
             <h2>Quick Actions</h2>
             <div class="action-buttons">
                 <button onclick="location.href='attendance.html'" class="btn btn-primary">Mark Attendance</button>
                 <button onclick="location.href='marks.html'" class="btn btn-primary">Enter Marks</button>
                 <button onclick="location.href='timetable.html'" class="btn btn-primary">View Timetable</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Today's Schedule</h2>
-            <div class="schedule-list">
-                <div class="schedule-item">
-                    <span class="time">8:00 - 9:00</span>
-                    <span class="subject">Mathematics - Grade 10-A</span>
-                </div>
-                <div class="schedule-item">
-                    <span class="time">9:00 - 10:00</span>
-                    <span class="subject">Mathematics - Grade 10-B</span>
-                </div>
-                <div class="schedule-item">
-                    <span class="time">10:30 - 11:30</span>
-                    <span class="subject">Mathematics - Grade 9-A</span>
-                </div>
             </div>
         </div>
     </div>
@@ -164,6 +189,80 @@
             if (academicYearTextEl) academicYearTextEl.style.color = textColor;
         }
 
+        // Format time to 12-hour AM/PM format
+        function formatTime(time24) {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        // Load today's schedule
+        async function loadTodaySchedule() {
+            try {
+                const client = getSupabaseClient();
+                const teacherId = localStorage.getItem('teacherId');
+                
+                if (!teacherId) {
+                    document.getElementById('todaySchedule').innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #999;">Teacher ID not found</div>';
+                    return;
+                }
+
+                // Get current day (Monday = 1, Sunday = 7)
+                const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const today = new Date();
+                const dayName = daysOfWeek[today.getDay()];
+                
+                // Weekend check
+                if (dayName === 'Saturday' || dayName === 'Sunday') {
+                    document.getElementById('todaySchedule').innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #999;">No classes scheduled for today (Weekend)</div>';
+                    return;
+                }
+                
+                // Fetch today's timetable
+                const { data, error } = await client
+                    .from('timetable')
+                    .select(`
+                        *,
+                        subjects(subject_name, subject_code),
+                        classes(class_name)
+                    `)
+                    .eq('teacher_id', teacherId)
+                    .eq('day_of_week', dayName)
+                    .eq('is_break', false)
+                    .order('start_time', { ascending: true });
+                
+                if (error) throw error;
+                
+                const scheduleDiv = document.getElementById('todaySchedule');
+                
+                if (!data || data.length === 0) {
+                    scheduleDiv.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #999;">No classes scheduled for today</div>';
+                    return;
+                }
+                
+                // Display schedule
+                scheduleDiv.innerHTML = data.map(period => {
+                    const timeRange = `${formatTime(period.start_time)} - ${formatTime(period.end_time)}`;
+                    const subjectName = period.subjects?.subject_name || 'Unknown Subject';
+                    const className = period.classes?.class_name || 'Unknown Class';
+                    
+                    return `
+                        <div class="schedule-item">
+                            <span class="time">${timeRange}</span>
+                            <span class="subject">${subjectName} - ${className}</span>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading today\'s schedule:', error);
+                document.getElementById('todaySchedule').innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #f44336;">Error loading schedule</div>';
+            }
+        }
+
         // Load dashboard statistics
         async function loadDashboardStats() {
             try {
@@ -193,8 +292,89 @@
             const isAuth = await checkAuthentication('teacher');
             if (isAuth) {
                 await loadDashboardStats();
+                await loadTodaySchedule();
+                renderCalendar();
             }
         });
+
+        // ============= ACADEMIC CALENDAR =============
+        
+        let currentDate = new Date();
+
+        // Render calendar for current month
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update header
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and number of days (adjust for Monday start)
+            let firstDay = new Date(year, month, 1).getDay();
+            firstDay = firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday=0 to Sunday=6, shift others
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            // Get today's date
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            const todayDate = today.getDate();
+            
+            // Build calendar days
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Previous month's days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const dayEl = createDayElement(day, true, false, false);
+                calendarDays.appendChild(dayEl);
+            }
+            
+            // Current month's days
+            for (let day = 1; day <= daysInMonth; day++) {
+                let dayOfWeek = new Date(year, month, day).getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Saturday=6, Sunday=0
+                const isToday = isCurrentMonth && day === todayDate;
+                const dayEl = createDayElement(day, false, isToday, isWeekend);
+                calendarDays.appendChild(dayEl);
+            }
+            
+            // Next month's days to fill the grid
+            const totalCells = calendarDays.children.length;
+            const remainingCells = 42 - totalCells; // 6 rows × 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayEl = createDayElement(day, true, false, false);
+                calendarDays.appendChild(dayEl);
+            }
+        }
+
+        // Create day element
+        function createDayElement(day, isOtherMonth, isToday, isWeekend) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = day;
+            
+            if (isOtherMonth) {
+                dayEl.classList.add('other-month');
+            }
+            // Priority: today overrides weekend styling
+            if (isToday) {
+                dayEl.classList.add('today');
+            } else if (isWeekend && !isOtherMonth) {
+                dayEl.classList.add('weekend');
+            }
+            
+            return dayEl;
+        }
+
+        // Change month
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
     </script>
 </body>
 </html>

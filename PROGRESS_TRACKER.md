@@ -1289,6 +1289,160 @@ GROUP BY c.id, c.grade, c.class_letter, c.class_name,
 
 ---
 
+### Session 11 - December 7, 2025 (Evening)
+
+#### **Completed Tasks**
+
+##### 1. Academic Calendar Integration
+
+- ✅ **Added interactive monthly calendar to admin dashboard**:
+
+  - Calendar positioned on left side (400px fixed width)
+  - Quick Actions moved to right side with reduced height
+  - Month navigation with previous/next buttons
+  - Weekday order: Monday through Sunday
+  - Automatic highlighting of current date (purple #667eea)
+  - Weekend highlighting with low opacity red background
+  - Priority system: today styling overrides weekend when they overlap
+  - Legend showing color indicators for Today and Weekend
+  - Compact design with 36px day height
+
+- ✅ **Replicated calendar to teacher dashboard**:
+
+  - Same styling and functionality as admin calendar
+  - Integrated with existing teacher theme colors
+  - Responsive layout with proper grid structure
+
+- ✅ **Teacher dashboard layout optimization**:
+  - Calendar on left (400px)
+  - Today's Schedule on right (dynamic width)
+  - Quick Actions below (full width, horizontal layout)
+  - All sections properly aligned with `align-self: start`
+
+##### 2. Dynamic Teacher Schedule Display
+
+- ✅ **Real-time schedule loading**:
+
+  - Fetches teacher's timetable from database based on logged-in teacher ID
+  - Filters by current day of week (Monday-Friday)
+  - Displays all periods with time ranges in 12-hour AM/PM format
+  - Shows subject name and class name for each period
+  - Sorted chronologically by start time
+
+- ✅ **Edge case handling**:
+
+  - Weekend detection (Saturday/Sunday) - shows "No classes scheduled for today (Weekend)"
+  - No schedule found - shows "No classes scheduled for today"
+  - Missing teacher ID - shows error message
+  - Loading state while fetching data from database
+  - Error handling for database connection issues
+
+- ✅ **Schedule display format**:
+  - Time range in readable format (e.g., "8:00 AM - 8:40 AM")
+  - Subject and class combined (e.g., "Mathematics - Grade 10-A")
+  - Clean, card-based layout matching existing design system
+
+##### 3. UI/UX Enhancements
+
+- ✅ **Calendar styling**:
+
+  - Background matches other dashboard cards (white/dark based on theme)
+  - Border radius and shadow consistent with site design
+  - Purple primary color (#667eea) for navigation and today marker
+  - Smooth hover effects and transitions
+  - Proper dark theme support with adjusted colors
+
+- ✅ **Quick Actions optimization**:
+
+  - Reduced padding from 25px to 20px
+  - Heading size reduced to 1.25rem
+  - Horizontal flex layout instead of grid for better space usage
+  - Restored to full-width layout below calendar/schedule
+
+- ✅ **Responsive design considerations**:
+  - Dashboard grid collapses to single column on screens < 1024px
+  - All components maintain proper spacing and alignment
+  - Self-aligning components prevent unwanted stretching
+
+#### **Technical Implementation Details**
+
+**Calendar Component**:
+
+- JavaScript date manipulation for month rendering
+- Dynamic day generation accounting for month start day
+- Monday-first week calculation: `firstDay = firstDay === 0 ? 6 : firstDay - 1`
+- 42-day grid (6 rows × 7 days) for consistent height
+- Previous/next month days shown with reduced opacity
+- CSS Grid layout: `grid-template-columns: repeat(7, 1fr)`
+- Today detection: Compare current date with rendered date
+- Weekend detection: `dayOfWeek === 0 || dayOfWeek === 6`
+
+**Schedule Loading System**:
+
+```javascript
+// Day detection
+const daysOfWeek = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+const dayName = daysOfWeek[today.getDay()];
+
+// Database query
+await client
+  .from("timetable")
+  .select("*, subjects(subject_name), classes(class_name)")
+  .eq("teacher_id", teacherId)
+  .eq("day_of_week", dayName)
+  .eq("is_break", false)
+  .order("start_time", { ascending: true });
+```
+
+**CSS Variables Used**:
+
+- `--card-bg`: Dynamic card backgrounds
+- `--border-color`: Consistent border colors
+- `--text-primary`: Main text color
+- `--text-secondary`: Secondary text color
+- `--primary-color`: Brand color (#667eea)
+- `--primary-hover`: Hover state for primary elements
+- `--hover-bg`: Background color for hover states
+
+**Files Modified**:
+
+1. `admin/dashboard.html` - Added calendar component and JavaScript
+2. `admin/admin.css` - Added calendar styling (150+ lines)
+3. `teacher/dashboard.html` - Added calendar and schedule loading
+4. `teacher/teacher.css` - Added calendar styling
+5. `shared/styles.css` - Updated Quick Actions layout
+
+#### **Summary of Session 11**
+
+- **Focus**: Dashboard enhancements with academic calendar and dynamic schedule display
+- **Key Achievements**:
+  - Interactive academic calendar on both admin and teacher dashboards
+  - Real-time teacher schedule loading from timetable database
+  - Improved dashboard layout with better space utilization
+  - Consistent styling across both portals
+  - Proper theme integration (light/dark mode support)
+- **User Experience Improvements**:
+  - Teachers can quickly see today's schedule at a glance
+  - Calendar provides quick date reference for planning
+  - Weekend/holiday awareness built into schedule display
+  - Clean, professional design matching existing system aesthetics
+- **Technical Wins**:
+  - Reusable calendar component across portals
+  - Efficient database queries with proper joins
+  - Edge case handling for robustness
+  - CSS Grid mastery for responsive layouts
+- **Status**: Academic calendar and dynamic schedule features complete and fully integrated
+
+---
+
 ## Next Steps (See TODO.md for detailed list)
 
 1. **Complete Marks Approval Integration**: Integrate marks data into Teacher Requests page

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -315,7 +316,7 @@
                 displaySubjects(allSubjects);
             } catch (error) {
                 console.error('Error loading subjects:', error);
-                alert('Error loading subjects');
+                showToast('Error loading subjects', 'error');
             }
         }
 
@@ -475,37 +476,39 @@
             const teacherId = document.getElementById('teacherSelect').value;
             
             if (!teacherId) {
-                alert('Please select a teacher');
+                showToast('Please select a teacher', 'warning');
                 return;
             }
             
             try {
                 await assignTeacherToSubject(teacherId, currentSubjectId);
-                alert('Teacher assigned successfully!');
+                showToast('Teacher assigned successfully!', 'success');
                 await loadSubjects();
                 await loadAssignedTeachers(currentSubjectId);
                 document.getElementById('teacherSelect').value = '';
             } catch (error) {
                 console.error('Error assigning teacher:', error);
-                alert('Error assigning teacher: ' + error.message);
+                showToast('Error assigning teacher: ' + error.message, 'error');
             }
         }
 
         // Remove teacher from subject
         async function removeTeacher(teacherId) {
-            if (!confirm('Are you sure you want to remove this teacher from the subject?')) {
-                return;
-            }
-            
-            try {
-                await removeTeacherFromSubject(teacherId, currentSubjectId);
-                alert('Teacher removed successfully!');
-                await loadSubjects();
-                await loadAssignedTeachers(currentSubjectId);
-            } catch (error) {
-                console.error('Error removing teacher:', error);
-                alert('Error removing teacher: ' + error.message);
-            }
+            showConfirmDialog(
+                'Remove Teacher',
+                'Are you sure you want to remove this teacher from the subject?',
+                async () => {
+                    try {
+                        await removeTeacherFromSubject(teacherId, currentSubjectId);
+                        showToast('Teacher removed successfully!', 'success');
+                        await loadSubjects();
+                        await loadAssignedTeachers(currentSubjectId);
+                    } catch (error) {
+                        console.error('Error removing teacher:', error);
+                        showToast('Error removing teacher: ' + error.message, 'error');
+                    }
+                }
+            );
         }
 
         // Clear filters
@@ -536,7 +539,7 @@
             
             const checkboxes = document.querySelectorAll('input[name="grades"]:checked');
             if (checkboxes.length === 0) {
-                alert('Please select at least one applicable grade');
+                showToast('Please select at least one applicable grade', 'warning');
                 return;
             }
             
@@ -558,12 +561,12 @@
                 
                 if (error) throw error;
                 
-                alert('Subject added successfully!');
+                showToast('Subject added successfully!', 'success');
                 closeAddSubjectModal();
                 await loadSubjects();
             } catch (error) {
                 console.error('Error adding subject:', error);
-                alert('Error adding subject: ' + error.message);
+                showToast('Error adding subject: ' + error.message, 'error');
             }
         });
 
@@ -612,7 +615,7 @@
                     data.map(c => `<option value="${c.id}" data-grade="${c.grade}">${c.class_name}</option>`).join('');
             } catch (error) {
                 console.error('Error loading classes:', error);
-                alert('Error loading classes: ' + error.message);
+                showToast('Error loading classes: ' + error.message, 'error');
             }
         }
 
@@ -637,7 +640,7 @@
             const academicYear = document.getElementById('regAcademicYear').value;
 
             if (!classId) {
-                alert('Please select a class');
+                showToast('Please select a class', 'warning');
                 return;
             }
 
@@ -688,7 +691,7 @@
                 document.getElementById('studentsListSection').style.display = 'block';
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
+                showToast('Error loading students: ' + error.message, 'error');
             }
         }
 
@@ -848,12 +851,12 @@
 
                 if (insertError) throw insertError;
 
-                alert('Subject assignments saved successfully!');
+                showToast('Subject assignments saved successfully!', 'success');
                 closeAssignSubjectsToStudentModal();
                 loadStudentsForRegistration(); // Refresh the list
             } catch (error) {
                 console.error('Error saving assignments:', error);
-                alert('Error saving assignments: ' + error.message);
+                showToast('Error saving assignments: ' + error.message, 'error');
             }
         });
 

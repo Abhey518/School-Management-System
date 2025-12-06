@@ -30,7 +30,7 @@ async function checkAuthentication(requiredRole) {
         
         // Check if user has required role
         if (requiredRole && userRole.role !== requiredRole) {
-            alert('Access denied. You do not have permission to access this page.');
+            showToast('Access denied. You do not have permission to access this page.', 'error');
             redirectToLogin();
             return false;
         }

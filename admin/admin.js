@@ -80,9 +80,9 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Confirm dialog
-function confirmAction(message) {
-    return confirm(message);
+// Confirm dialog - Note: This now uses callback pattern instead of returning boolean
+function confirmAction(message, onConfirm, onCancel = null) {
+    showConfirmDialog('Confirm Action', message, onConfirm, onCancel);
 }
 
 // Export data to CSV

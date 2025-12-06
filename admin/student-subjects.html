@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
         .subtitle { color: #666; margin-top: -0.5rem; margin-bottom: 1.5rem; }
@@ -263,7 +264,7 @@
                 displayStudents();
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
+                showToast('Error loading students: ' + error.message, 'error');
             }
         }
 
@@ -487,12 +488,12 @@
                     if (insertError) throw insertError;
                 }
 
-                alert('Subject assignments saved successfully!');
+                showToast('Subject assignments saved successfully!', 'success');
                 closeAssignSubjectsModal();
                 loadStudents(); // Reload students to show updated assignments
             } catch (error) {
                 console.error('Error saving assignments:', error);
-                alert('Error saving assignments: ' + error.message);
+                showToast('Error saving assignments: ' + error.message, 'error');
             }
         });
 

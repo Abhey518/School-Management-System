@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -457,7 +458,7 @@
                 localStorage.setItem('customBannerColor', schoolSettings.customBannerColor);
                 localStorage.setItem('bannerTextColor', schoolSettings.bannerTextColor);
                 localStorage.setItem('customTextColor', schoolSettings.customTextColor);
-                alert('School information saved successfully!');
+                showToast('School information saved successfully!', 'success');
             }
         }
 
@@ -471,7 +472,7 @@
             localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
             localStorage.setItem('periodDuration', schoolSettings.periodDuration);
             localStorage.setItem('intervalDuration', schoolSettings.intervalDuration);
-            alert('School timings saved successfully!');
+            showToast('School timings saved successfully!', 'success');
         }
 
         // Save theme
@@ -487,7 +488,7 @@
             localStorage.setItem('bgOpacity', schoolSettings.bgOpacity);
             
             applyTheme(schoolSettings.theme);
-            alert('Theme saved successfully!');
+            showToast('Theme saved successfully!', 'success');
         }
 
         // Reset theme
@@ -509,7 +510,7 @@
             localStorage.setItem('bgOpacity', 'subtle');
             
             applyTheme('light');
-            alert('Theme reset to default');
+            showToast('Theme reset to default', 'info');
         }
 
         // Preview theme

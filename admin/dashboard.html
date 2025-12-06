@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -143,13 +144,45 @@
             </div>
         </div>
 
-        <div class="quick-actions">
-            <h2>Quick Actions</h2>
-            <div class="action-buttons">
-                <button onclick="location.href='students.html'" class="btn btn-primary">Manage Students</button>
-                <button onclick="location.href='teachers.html'" class="btn btn-primary">Manage Teachers</button>
-                <button onclick="location.href='classes.html'" class="btn btn-primary">Manage Classes</button>
-                <button onclick="location.href='timetable.html'" class="btn btn-primary">View Timetable</button>
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: 400px 1fr; gap: 2rem; margin-top: 2rem;">
+            <!-- Academic Calendar -->
+            <div class="calendar-card">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)" class="calendar-nav-btn">‹</button>
+                    <h2 id="calendarMonth"></h2>
+                    <button onclick="changeMonth(1)" class="calendar-nav-btn">›</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                    <div>Sun</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #667eea;"></span>
+                        <span>Today</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgba(255, 107, 107, 0.3);"></span>
+                        <span>Weekend</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-buttons">
+                    <button onclick="location.href='students.html'" class="btn btn-primary">Manage Students</button>
+                    <button onclick="location.href='teachers.html'" class="btn btn-primary">Manage Teachers</button>
+                    <button onclick="location.href='classes.html'" class="btn btn-primary">Manage Classes</button>
+                    <button onclick="location.href='timetable.html'" class="btn btn-primary">View Timetable</button>
+                </div>
             </div>
         </div>
     </div>
@@ -264,6 +297,90 @@
             if (bannerContainer) {
                 bannerContainer.style.opacity = '1';
             }
+        }
+
+        // ============= ACADEMIC CALENDAR =============
+        
+        let currentDate = new Date();
+        
+        // Initialize calendar on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderCalendar();
+        });
+
+        // Render calendar for current month
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update header
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and number of days (adjust for Monday start)
+            let firstDay = new Date(year, month, 1).getDay();
+            firstDay = firstDay === 0 ? 6 : firstDay - 1; // Convert Sunday=0 to Sunday=6, shift others
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            // Get today's date
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+            const todayDate = today.getDate();
+            
+            // Build calendar days
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            // Previous month's days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const dayEl = createDayElement(day, true, false, false);
+                calendarDays.appendChild(dayEl);
+            }
+            
+            // Current month's days
+            for (let day = 1; day <= daysInMonth; day++) {
+                let dayOfWeek = new Date(year, month, day).getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Saturday=6, Sunday=0
+                const isToday = isCurrentMonth && day === todayDate;
+                const dayEl = createDayElement(day, false, isToday, isWeekend);
+                calendarDays.appendChild(dayEl);
+            }
+            
+            // Next month's days to fill the grid
+            const totalCells = calendarDays.children.length;
+            const remainingCells = 42 - totalCells; // 6 rows × 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayEl = createDayElement(day, true, false, false);
+                calendarDays.appendChild(dayEl);
+            }
+        }
+
+        // Create day element
+        function createDayElement(day, isOtherMonth, isToday, isWeekend) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+            dayEl.textContent = day;
+            
+            if (isOtherMonth) {
+                dayEl.classList.add('other-month');
+            }
+            // Priority: today overrides weekend styling
+            if (isToday) {
+                dayEl.classList.add('today');
+            } else if (isWeekend && !isOtherMonth) {
+                dayEl.classList.add('weekend');
+            }
+            
+            return dayEl;
+        }
+
+        // Change month
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
         }
     </script>
 </body>

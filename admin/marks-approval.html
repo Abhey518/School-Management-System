@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
         .subtitle { color: #666; margin-bottom: 30px; }
@@ -278,7 +279,7 @@
                 displaySubmissions(submissions, containerId);
             } catch (error) {
                 console.error('Error loading submissions:', error);
-                alert('Error loading submissions: ' + error.message);
+                showToast('Error loading submissions: ' + error.message, 'error');
             }
         }
 
@@ -458,7 +459,7 @@
                 document.getElementById('viewDetailsModal').style.display = 'block';
             } catch (error) {
                 console.error('Error loading details:', error);
-                alert('Error loading details: ' + error.message);
+                showToast('Error loading details: ' + error.message, 'error');
             }
         }
 
@@ -469,32 +470,34 @@
 
         // Approve submission
         async function approveSubmission(marksIdsString) {
-            if (!confirm('Are you sure you want to approve this submission?')) {
-                return;
-            }
+            showConfirmDialog(
+                'Approve Submission',
+                'Are you sure you want to approve this submission?',
+                async () => {
+                    const marksIds = marksIdsString.split(',');
+                    
+                    try {
+                        const { error } = await supabase
+                            .from('marks')
+                            .update({
+                                approval_status: 'Approved',
+                                approved_at: new Date().toISOString()
+                                // approved_by would be set from authentication
+                            })
+                            .in('id', marksIds);
 
-            const marksIds = marksIdsString.split(',');
-            
-            try {
-                const { error } = await supabase
-                    .from('marks')
-                    .update({
-                        approval_status: 'Approved',
-                        approved_at: new Date().toISOString()
-                        // approved_by would be set from authentication
-                    })
-                    .in('id', marksIds);
+                        if (error) throw error;
 
-                if (error) throw error;
-
-                // TODO: Create notification for teacher
-                
-                alert('Marks approved successfully!');
-                loadSubmissions();
-            } catch (error) {
-                console.error('Error approving marks:', error);
-                alert('Error approving marks: ' + error.message);
-            }
+                        // TODO: Create notification for teacher
+                        
+                        showToast('Marks approved successfully!', 'success');
+                        loadSubmissions();
+                    } catch (error) {
+                        console.error('Error approving marks:', error);
+                        showToast('Error approving marks: ' + error.message, 'error');
+                    }
+                }
+            );
         }
 
         // Open recheck reason modal
@@ -530,12 +533,12 @@
 
                 // TODO: Create notification for teacher
 
-                alert('Recheck request sent to teacher!');
+                showToast('Recheck request sent to teacher!', 'success');
                 closeRecheckReasonModal();
                 loadSubmissions();
             } catch (error) {
                 console.error('Error requesting recheck:', error);
-                alert('Error requesting recheck: ' + error.message);
+                showToast('Error requesting recheck: ' + error.message, 'error');
             }
         });
 

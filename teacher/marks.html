@@ -10,6 +10,7 @@
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
         
@@ -339,7 +340,7 @@
                 });
             } catch (error) {
                 console.error('Error loading classes:', error);
-                alert('Error loading classes: ' + error.message);
+                showToast('Error loading classes: ' + error.message, 'error');
             }
         }
 
@@ -397,7 +398,7 @@
                 subjectSelect.disabled = false;
             } catch (error) {
                 console.error('Error loading subjects:', error);
-                alert('Error loading subjects: ' + error.message);
+                showToast('Error loading subjects: ' + error.message, 'error');
             }
         }
 
@@ -408,7 +409,7 @@
             const examName = document.getElementById('selectExam').value;
 
             if (!classId || !subjectId || !examName) {
-                alert('Please select Class, Subject, and Exam');
+                showToast('Please select Class, Subject, and Exam', 'warning');
                 return;
             }
 
@@ -462,7 +463,7 @@
                 document.getElementById('marksEntrySection').style.display = 'block';
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
+                showToast('Error loading students: ' + error.message, 'error');
             }
         }
 
@@ -522,7 +523,7 @@
                     const marks = parseInt(input.value);
                     
                     if (marks < 0 || marks > 100) {
-                        alert(`Invalid marks for ${student.name_with_initials}. Marks must be between 0 and 100.`);
+                        showToast(`Invalid marks for ${student.name_with_initials}. Marks must be between 0 and 100.`, 'warning');
                         hasErrors = true;
                         return;
                     }
@@ -542,13 +543,14 @@
             if (hasErrors) return;
 
             if (marksToSubmit.length === 0) {
-                alert('Please enter marks for at least one student');
+                showToast('Please enter marks for at least one student', 'warning');
                 return;
             }
 
-            if (!confirm(`Submit marks for ${marksToSubmit.length} student(s) for approval?`)) {
-                return;
-            }
+            showConfirmDialog(
+                'Submit Marks',
+                `Submit marks for ${marksToSubmit.length} student(s) for approval?`,
+                async () => {
 
             try {
                 // Delete existing pending/recheck marks for these students
@@ -593,13 +595,15 @@
                     // Don't fail the whole operation if notification fails
                 }
 
-                alert('Marks submitted successfully! Waiting for admin approval.');
+                showToast('Marks submitted successfully! Waiting for admin approval.', 'success');
                 resetMarksForm();
                 loadSubmissionHistory();
             } catch (error) {
                 console.error('Error submitting marks:', error);
-                alert('Error submitting marks: ' + error.message);
+                showToast('Error submitting marks: ' + error.message, 'error');
             }
+                }
+            );
         });
 
         // Reset marks form

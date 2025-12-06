@@ -163,7 +163,7 @@ function saveTimings() {
     schoolSettings.endTime = document.getElementById('schoolEndTime').value;
     
     localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
-    alert('School timings saved successfully!');
+    showToast('School timings saved successfully!', 'success');
 }
 
 // Save theme
@@ -171,7 +171,7 @@ function saveTheme() {
     schoolSettings.theme = document.getElementById('themeSelect').value;
     localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
     applyTheme(schoolSettings.theme);
-    alert('Theme saved successfully!');
+    showToast('Theme saved successfully!', 'success');
 }
 
 // Reset theme
@@ -180,7 +180,7 @@ function resetTheme() {
     document.getElementById('themeSelect').value = 'light';
     localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
     applyTheme('light');
-    alert('Theme reset to default (Light)');
+    showToast('Theme reset to default (Light)', 'info');
 }
 
 // Preview theme
@@ -204,7 +204,7 @@ function saveAcademicSettings() {
     schoolSettings.schoolName = document.getElementById('schoolName').value;
     
     localStorage.setItem('schoolSettings', JSON.stringify(schoolSettings));
-    alert('Academic settings saved successfully!');
+    showToast('Academic settings saved successfully!', 'success');
 }
 
 // ============= Notifications Functions =============

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="teacher.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../shared/supabase.js"></script>
     <script src="../shared/auth.js"></script>
@@ -160,7 +161,7 @@
                 });
             } catch (error) {
                 console.error('Error loading classes:', error);
-                alert('Error loading classes: ' + error.message);
+                showToast('Error loading classes: ' + error.message, 'error');
             }
         }
 
@@ -170,7 +171,7 @@
             const selectedDate = document.getElementById('attendanceDate').value;
             
             if (!selectedClassId || !selectedDate) {
-                alert('Please select both class and date');
+                showToast('Please select both class and date', 'warning');
                 return;
             }
 
@@ -184,7 +185,7 @@
                 if (error) throw error;
                 
                 if (students.length === 0) {
-                    alert('No students found in this class');
+                    showToast('No students found in this class', 'warning');
                     return;
                 }
 
@@ -241,7 +242,7 @@
                 }
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
+                showToast('Error loading students: ' + error.message, 'error');
             }
         }
 
@@ -251,7 +252,7 @@
             const selectedDate = document.getElementById('attendanceDate').value;
 
             if (!selectedClassId || !selectedDate) {
-                alert('Please select both class and date');
+                showToast('Please select both class and date', 'warning');
                 return;
             }
 
@@ -291,7 +292,7 @@
 
                 if (insertError) throw insertError;
 
-                alert('Attendance marked successfully!');
+                showToast('Attendance marked successfully!', 'success');
                 
                 // Update UI to show it's now editable
                 document.getElementById('submitBtn').style.display = 'none';
@@ -299,7 +300,7 @@
                 document.getElementById('attendanceStatus').textContent = '✓ Attendance marked successfully';
             } catch (error) {
                 console.error('Error submitting attendance:', error);
-                alert('Error submitting attendance: ' + error.message);
+                showToast('Error submitting attendance: ' + error.message, 'error');
             }
         }
 
@@ -309,13 +310,14 @@
             const selectedDate = document.getElementById('attendanceDate').value;
 
             if (!selectedClassId || !selectedDate) {
-                alert('Please select both class and date');
+                showToast('Please select both class and date', 'warning');
                 return;
             }
 
-            if (!confirm('Are you sure you want to update the attendance for this date?')) {
-                return;
-            }
+            showConfirmDialog(
+                'Update Attendance',
+                'Are you sure you want to update the attendance for this date?',
+                async () => {
 
             try {
                 // Get all students in the class
@@ -353,12 +355,14 @@
 
                 if (insertError) throw insertError;
 
-                alert('Attendance updated successfully!');
+                showToast('Attendance updated successfully!', 'success');
                 document.getElementById('attendanceStatus').textContent = '✓ Attendance updated successfully';
             } catch (error) {
                 console.error('Error updating attendance:', error);
-                alert('Error updating attendance: ' + error.message);
+                showToast('Error updating attendance: ' + error.message, 'error');
             }
+                }
+            );
         }
 
         window.addEventListener('DOMContentLoaded', async () => {

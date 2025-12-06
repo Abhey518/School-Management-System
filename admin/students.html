@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../shared/styles.css">
     <link rel="stylesheet" href="admin.css">
     <script src="../shared/theme.js"></script>
+    <script src="../shared/notifications.js"></script>
     <style>
         .container { max-width: 1400px; }
     </style>
@@ -487,7 +488,7 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students');
+                showToast('Error loading students', 'error');
             }
         }
 
@@ -562,7 +563,7 @@
                 document.getElementById('studentModal').style.display = 'block';
             } catch (error) {
                 console.error('Error loading student details:', error);
-                alert('Error loading student details');
+                showToast('Error loading student details', 'error');
             }
         }
 
@@ -592,17 +593,23 @@
         // Delete student from modal
         let currentStudentId = null;
         async function deleteStudentFromModal() {
-            if (currentStudentId && confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
-                try {
-                    await deleteStudentById(currentStudentId);
-                    alert('Student deleted successfully!');
-                    closeModal();
-                    loadStudents();
-                } catch (error) {
-                    console.error('Error deleting student:', error);
-                    alert('Error deleting student: ' + error.message);
+            if (!currentStudentId) return;
+            
+            showConfirmDialog(
+                'Delete Student',
+                'Are you sure you want to delete this student? This action cannot be undone.',
+                async () => {
+                    try {
+                        await deleteStudentById(currentStudentId);
+                        showToast('Student deleted successfully!', 'success');
+                        closeModal();
+                        loadStudents();
+                    } catch (error) {
+                        console.error('Error deleting student:', error);
+                        showToast('Error deleting student: ' + error.message, 'error');
+                    }
                 }
-            }
+            );
         }
 
         // Open Edit Student Modal
@@ -632,7 +639,7 @@
                 document.getElementById('editStudentModal').style.display = 'block';
             } catch (error) {
                 console.error('Error loading student for edit:', error);
-                alert('Error loading student details');
+                showToast('Error loading student details', 'error');
             }
         }
 
@@ -654,7 +661,7 @@
             const classId = findClassId(grade, classLetter);
             
             if (!classId) {
-                alert(`Class not found for Grade ${grade}-${classLetter}. Please create this class first in the Classes page.`);
+                showToast(`Class not found for Grade ${grade}-${classLetter}. Please create this class first in the Classes page.`, 'error');
                 return;
             }
             
@@ -683,12 +690,12 @@
             
             try {
                 await updateStudent(studentId, studentData);
-                alert('Student updated successfully!');
+                showToast('Student updated successfully!', 'success');
                 closeEditStudentModal();
                 loadStudents();
             } catch (error) {
                 console.error('Error updating student:', error);
-                alert('Error updating student: ' + error.message);
+                showToast('Error updating student: ' + error.message, 'error');
             }
         });
 
@@ -704,7 +711,7 @@
             const classId = findClassId(grade, classLetter);
             
             if (!classId) {
-                alert(`Class not found for Grade ${grade}-${classLetter}. Please create this class first in the Classes page.`);
+                showToast(`Class not found for Grade ${grade}-${classLetter}. Please create this class first in the Classes page.`, 'error');
                 return;
             }
             
@@ -734,13 +741,13 @@
             
             try {
                 await addStudent(studentData);
-                alert('Student added successfully!');
+                showToast('Student added successfully!', 'success');
                 e.target.reset();
                 closeAddStudentModal();
                 loadStudents();
             } catch (error) {
                 console.error('Error adding student:', error);
-                alert('Error adding student: ' + error.message);
+                showToast('Error adding student: ' + error.message, 'error');
             }
         });
 
@@ -807,7 +814,7 @@
                     data.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
             } catch (error) {
                 console.error('Error loading classes:', error);
-                alert('Error loading classes: ' + error.message);
+                showToast('Error loading classes: ' + error.message, 'error');
             }
         }
 
@@ -818,12 +825,12 @@
             const toDate = document.getElementById('attendanceToDate').value;
 
             if (!classId) {
-                alert('Please select a class');
+                showToast('Please select a class', 'warning');
                 return;
             }
 
             if (!fromDate || !toDate) {
-                alert('Please select date range');
+                showToast('Please select date range', 'warning');
                 return;
             }
 
@@ -838,7 +845,7 @@
                 if (error) throw error;
 
                 if (students.length === 0) {
-                    alert('No students found in this class');
+                    showToast('No students found in this class', 'info');
                     return;
                 }
 
@@ -850,7 +857,7 @@
                 document.getElementById('studentSelectionSection').style.display = 'block';
             } catch (error) {
                 console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
+                showToast('Error loading students: ' + error.message, 'error');
             }
         }
 
@@ -859,7 +866,7 @@
             const studentId = document.getElementById('studentSelect').value;
             
             if (!studentId) {
-                alert('Please select a student');
+                showToast('Please select a student', 'warning');
                 return;
             }
 
@@ -975,7 +982,7 @@
                 document.getElementById('attendanceReportSection').style.display = 'block';
             } catch (error) {
                 console.error('Error loading attendance:', error);
-                alert('Error loading attendance: ' + error.message);
+                showToast('Error loading attendance: ' + error.message, 'error');
             }
         }
 
