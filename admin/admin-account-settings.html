@@ -197,6 +197,7 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         const supabase = getSupabaseClient();
 
         // Load admin information
@@ -309,6 +310,7 @@
                 await loadAdminInfo();
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

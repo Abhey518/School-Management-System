@@ -244,6 +244,7 @@
     <script src="teacher.js"></script>
     <script src="teacher-nav.js"></script>
     <script>
+        (function() {
         const supabase = getSupabaseClient();
 
         // Load teacher information
@@ -518,6 +519,7 @@
                 }
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

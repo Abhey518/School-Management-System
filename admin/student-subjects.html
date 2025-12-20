@@ -184,6 +184,7 @@
     <script src="../shared/theme.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         // Initialize Supabase client
         const supabase = getSupabaseClient();
         
@@ -513,6 +514,7 @@
                 loadSubjects();
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

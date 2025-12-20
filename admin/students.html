@@ -421,6 +421,7 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         // Store all classes for lookup
         let allClasses = [];
 
@@ -1020,6 +1021,25 @@
             attendanceRecords = [];
         }
 
+        // Expose functions to global scope for onclick handlers
+        window.updateClassDropdown = updateClassDropdown;
+        window.applyFilters = applyFilters;
+        window.clearFilters = clearFilters;
+        window.viewStudentDetails = viewStudentDetails;
+        window.openAddStudentModal = openAddStudentModal;
+        window.closeAddStudentModal = closeAddStudentModal;
+        window.closeModal = closeModal;
+        window.toggleAdditionalActions = toggleAdditionalActions;
+        window.deleteStudentFromModal = deleteStudentFromModal;
+        window.openEditStudentModal = openEditStudentModal;
+        window.closeEditStudentModal = closeEditStudentModal;
+        window.openViewAttendanceModal = openViewAttendanceModal;
+        window.closeViewAttendanceModal = closeViewAttendanceModal;
+        window.loadAttendanceReport = loadAttendanceReport;
+        window.viewStudentAttendance = viewStudentAttendance;
+        window.printAttendanceReport = printAttendanceReport;
+        window.resetAttendanceReport = resetAttendanceReport;
+
         // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
             const isAuth = await checkAuthentication('admin');
@@ -1029,6 +1049,7 @@
                 loadStudents();
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

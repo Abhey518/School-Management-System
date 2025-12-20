@@ -213,6 +213,7 @@
     <script src="admin.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         const supabase = getSupabaseClient();
         let allTickets = [];
         let currentFilter = 'all';
@@ -609,6 +610,7 @@
                 }, 30000);
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

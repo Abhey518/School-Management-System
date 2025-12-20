@@ -305,6 +305,7 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         let allSubjects = [];
         let currentSubjectId = null;
         let teachersData = [];
@@ -860,6 +861,21 @@
             }
         });
 
+        // Expose functions to global scope for onclick handlers
+        window.applyFilters = applyFilters;
+        window.clearFilters = clearFilters;
+        window.openAssignTeacherModal = openAssignTeacherModal;
+        window.assignTeacher = assignTeacher;
+        window.removeTeacher = removeTeacher;
+        window.openAddSubjectModal = openAddSubjectModal;
+        window.closeAddSubjectModal = closeAddSubjectModal;
+        window.closeModal = closeModal;
+        window.openSubjectRegistrationModal = openSubjectRegistrationModal;
+        window.closeSubjectRegistrationModal = closeSubjectRegistrationModal;
+        window.loadStudentsForRegistration = loadStudentsForRegistration;
+        window.openAssignSubjectsToStudentModal = openAssignSubjectsToStudentModal;
+        window.closeAssignSubjectsToStudentModal = closeAssignSubjectsToStudentModal;
+
         // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
             const isAuth = await checkAuthentication('admin');
@@ -868,6 +884,8 @@
                 await loadSubjects();
             }
         });
+        })(); // End of IIFE
+
     </script>
 </body>
 </html>

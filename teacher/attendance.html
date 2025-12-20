@@ -82,10 +82,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../shared/supabase.js"></script>
     <script src="../shared/api.js"></script>
     <script>
+        (function() {
         // Initialize Supabase client
         const supabase = getSupabaseClient();
         
@@ -365,6 +364,11 @@
             );
         }
 
+        // Expose functions to global scope for onclick handlers
+        window.loadStudentsForAttendance = loadStudentsForAttendance;
+        window.submitAttendance = submitAttendance;
+        window.updateAttendance = updateAttendance;
+
         window.addEventListener('DOMContentLoaded', async () => {
             // Check authentication first
             const isAuth = await checkAuthentication('teacher');
@@ -372,6 +376,7 @@
                 await loadClassesDropdown();
             }
         });
+        })(); // End of IIFE
     </script>
     <script src="teacher-nav.js"></script>
 </body>

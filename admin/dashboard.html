@@ -196,9 +196,11 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
-        const supabase = getSupabaseClient();
+        (function() {
+            // Get Supabase client
+            const supabase = getSupabaseClient();
 
-        // ============= Authentication Check =============
+            // ============= Authentication Check =============
         // Check authentication before loading page
         window.addEventListener('DOMContentLoaded', async () => {
             const isAuth = await checkAuthentication('admin');
@@ -408,6 +410,13 @@
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
         }
+
+        // Make functions globally accessible
+        window.loadDashboardStats = loadDashboardStats;
+        window.loadRecentActivities = loadRecentActivities;
+        window.renderCalendar = renderCalendar;
+        window.changeMonth = changeMonth;
+        })(); // End of IIFE
     </script>
 </body>
 </html>

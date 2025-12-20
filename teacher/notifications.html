@@ -166,6 +166,7 @@
     <script src="teacher.js"></script>
     <script src="teacher-nav.js"></script>
     <script>
+        (function() {
         const supabase = getSupabaseClient();
         let allNotifications = [];
         let currentFilter = 'all';
@@ -423,6 +424,7 @@
                 setInterval(loadNotifications, 30000);
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

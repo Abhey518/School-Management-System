@@ -176,6 +176,7 @@
     <script src="admin-navbar.js"></script>
     <script src="admin-profile.js"></script>
     <script>
+        (function() {
         console.log('=== MARKS APPROVAL SCRIPT STARTED ===');
         // Initialize Supabase client
         const supabase = getSupabaseClient();
@@ -567,6 +568,7 @@
                 console.error('Error during initialization:', error);
             }
         });
+        })(); // End of IIFE
     </script>
 </body>
 </html>

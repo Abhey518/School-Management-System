@@ -755,6 +755,32 @@ async function getAttendanceBySubjectAndDate(subjectId, date) {
     }
 }
 
+/**
+ * Get attendance by date (all students)
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<Array>} List of attendance records
+ */
+async function getAttendanceByDate(date) {
+    try {
+        const client = getSupabaseClient();
+        if (!client) {
+            console.error('Supabase client not initialized');
+            return [];
+        }
+
+        const { data, error } = await client
+            .from('attendance')
+            .select('*, students(full_name, name_with_initials, class_id)')
+            .eq('date', date);
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error fetching attendance by date:', error);
+        return [];
+    }
+}
+
 // ==================== MARKS ====================
 
 /**

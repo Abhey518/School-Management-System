@@ -502,7 +502,7 @@
             try {
                 await updateClass(classId, classData);
                 showToast('Class updated successfully!', 'success');
-                closeEditModal();
+                closeEditClassModal();
                 loadClasses();
             } catch (error) {
                 console.error('Error updating class:', error);

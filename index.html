@@ -156,16 +156,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="shared/supabase.js"></script>
     <script>
-        const supabase = getSupabaseClient();
-        
-        // Clear any stale localStorage data first
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('teacherId');
-        
-        // Check if user is already logged in
-        async function checkExistingSession() {
+        (function() {
+            // Get Supabase client
+            const supabase = getSupabaseClient();
+            
+            // Clear any stale localStorage data first
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('teacherId');
+            
+            // Check if user is already logged in
+            async function checkExistingSession() {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
                 if (error) throw error;
@@ -288,6 +290,7 @@
 
         // Check for existing session on page load
         window.addEventListener('DOMContentLoaded', checkExistingSession);
+        })(); // End of IIFE
     </script>
 </body>
 </html>
