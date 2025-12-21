@@ -231,6 +231,52 @@
                     });
                 }
 
+                // Get recheck requests for this teacher
+                try {
+                    const { data: recheckData, error: recheckError } = await supabase
+                        .from('student_marks_detailed')
+                        .select('*')
+                        .eq('approval_status', 'Recheck Required')
+                        .eq('entered_by', user.teacherId)
+                        .order('updated_at', { ascending: false });
+
+                    if (!recheckError && recheckData) {
+                        // Group by class, subject, exam
+                        const grouped = {};
+                        recheckData.forEach(mark => {
+                            const key = `${mark.class_id}_${mark.subject_id}_${mark.exam_name}`;
+                            if (!grouped[key]) {
+                                grouped[key] = {
+                                    class_name: mark.class_name,
+                                    subject_name: mark.subject_name,
+                                    exam_name: mark.exam_name,
+                                    recheck_reason: mark.recheck_reason,
+                                    updated_at: mark.updated_at,
+                                    count: 0
+                                };
+                            }
+                            grouped[key].count++;
+                        });
+
+                        Object.values(grouped).forEach(submission => {
+                            notifications.push({
+                                id: `recheck-${submission.class_name}-${submission.subject_name}-${submission.exam_name}`,
+                                type: 'marks',
+                                icon: '🔄',
+                                title: 'Marks Recheck Required',
+                                content: `Admin requested recheck for ${submission.class_name} - ${submission.subject_name} (${submission.exam_name})`,
+                                detail: submission.recheck_reason,
+                                time: new Date(submission.updated_at),
+                                unread: true,
+                                link: 'marks.html',
+                                priority: 'high'
+                            });
+                        });
+                    }
+                } catch (recheckError) {
+                    console.log('Error loading recheck requests:', recheckError);
+                }
+
                 // Sort by time (newest first)
                 notifications.sort((a, b) => b.time - a.time);
 
@@ -424,6 +470,12 @@
                 setInterval(loadNotifications, 30000);
             }
         });
+
+        // Expose functions to global scope for onclick handlers
+        window.filterNotifications = filterNotifications;
+        window.markAllAsRead = markAllAsRead;
+        window.markAsReadAndNavigate = markAsReadAndNavigate;
+        
         })(); // End of IIFE
     </script>
 </body>

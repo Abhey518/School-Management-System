@@ -88,30 +88,27 @@
         // Initialize Supabase client
         const supabase = getSupabaseClient();
         
-        // TODO: Replace with actual teacher ID from authentication
-        // For now, get the first teacher from the database
-        let CURRENT_TEACHER_ID = null;
+        // Get teacher ID from localStorage (set during login)
+        let CURRENT_TEACHER_ID = localStorage.getItem('teacherId');
         
         // Initialize teacher ID
         async function initializeTeacherId() {
-            try {
-                const { data, error } = await supabase
-                    .from('teachers')
-                    .select('id')
-                    .limit(1)
-                    .single();
-                
-                if (error) throw error;
-                CURRENT_TEACHER_ID = data.id;
-            } catch (error) {
-                console.error('Error getting teacher ID:', error);
+            // Get teacher ID from localStorage
+            CURRENT_TEACHER_ID = localStorage.getItem('teacherId');
+            
+            if (!CURRENT_TEACHER_ID) {
+                console.error('No teacher ID found in localStorage. Please log in again.');
+                showToast('Session expired. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
             }
         }
 
         // Set today's date as default
         document.getElementById('attendanceDate').valueAsDate = new Date();
 
-        // Load classes for dropdown - from teacher's timetable assignments
+        // Load classes for dropdown - only classes where teacher is class teacher or vice class teacher
         async function loadClassesDropdown() {
             try {
                 // Make sure teacher ID is initialized
@@ -124,32 +121,22 @@
                     return;
                 }
                 
-                // First, get all timetable entries for this teacher
-                const { data: timetableData, error: timetableError } = await supabase
-                    .from('timetable')
-                    .select('class_id')
-                    .eq('teacher_id', CURRENT_TEACHER_ID);
-
-                if (timetableError) throw timetableError;
-
-                if (!timetableData || timetableData.length === 0) {
-                    document.getElementById('classSelect').innerHTML = '<option value="">No classes assigned</option>';
-                    return;
-                }
-
-                // Get unique class IDs
-                const uniqueClassIds = [...new Set(timetableData.map(t => t.class_id))];
-
-                // Fetch class details
+                // Get classes where teacher is class teacher or vice class teacher
                 const { data: classesData, error: classesError } = await supabase
                     .from('classes')
                     .select('id, class_name')
-                    .in('id', uniqueClassIds)
+                    .or(`class_teacher_id.eq.${CURRENT_TEACHER_ID},vice_class_teacher_id.eq.${CURRENT_TEACHER_ID}`)
                     .order('class_name');
 
                 if (classesError) throw classesError;
 
                 const select = document.getElementById('classSelect');
+                
+                if (!classesData || classesData.length === 0) {
+                    select.innerHTML = '<option value="">No classes assigned as class teacher</option>';
+                    return;
+                }
+                
                 select.innerHTML = '<option value="">Select a class</option>';
                 
                 classesData.forEach(cls => {

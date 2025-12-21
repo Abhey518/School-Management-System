@@ -259,23 +259,20 @@
         // Initialize Supabase client
         const supabase = getSupabaseClient();
         
-        // TODO: Replace with actual teacher ID from authentication
-        // For now, get the first teacher from the database
-        let CURRENT_TEACHER_ID = null;
+        // Get teacher ID from localStorage (set during login)
+        let CURRENT_TEACHER_ID = localStorage.getItem('teacherId');
         
         // Initialize teacher ID
         async function initializeTeacherId() {
-            try {
-                const { data, error } = await supabase
-                    .from('teachers')
-                    .select('id')
-                    .limit(1)
-                    .single();
-                
-                if (error) throw error;
-                CURRENT_TEACHER_ID = data.id;
-            } catch (error) {
-                console.error('Error getting teacher ID:', error);
+            // Get teacher ID from localStorage
+            CURRENT_TEACHER_ID = localStorage.getItem('teacherId');
+            
+            if (!CURRENT_TEACHER_ID) {
+                console.error('No teacher ID found in localStorage. Please log in again.');
+                showToast('Session expired. Please log in again.', 'error');
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 2000);
             }
         }
         
@@ -711,6 +708,11 @@
                 console.error('Error loading submission history:', error);
             }
         }
+
+        // Expose functions to global scope for onclick/onchange handlers
+        window.loadSubjectsForClass = loadSubjectsForClass;
+        window.loadStudentsForMarks = loadStudentsForMarks;
+        window.resetMarksForm = resetMarksForm;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async () => {

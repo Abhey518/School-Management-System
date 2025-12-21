@@ -37,17 +37,8 @@ function getSupabaseClient() {
     return supabaseClient;
 }
 
+
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { getSupabaseClient, initSupabase };
 }
-
-// Instructions for setup:
-console.log('%c🔧 Supabase Setup Instructions:', 'color: #3ECF8E; font-size: 14px; font-weight: bold;');
-console.log('%c1. Create a Supabase account at https://supabase.com', 'color: #666;');
-console.log('%c2. Create a new project', 'color: #666;');
-console.log('%c3. Copy your Project URL and anon/public key from Project Settings > API', 'color: #666;');
-console.log('%c4. Replace SUPABASE_URL and SUPABASE_ANON_KEY in shared/supabase.js', 'color: #666;');
-console.log('%c5. Run the SQL schema from schema.sql in your Supabase SQL Editor', 'color: #666;');
-console.log('%c6. Include Supabase JS library in your HTML:', 'color: #666;');
-console.log('%c   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>', 'color: #3ECF8E;');

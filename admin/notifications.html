@@ -196,8 +196,52 @@
                     });
                 });
 
+                // Get pending marks submissions
+                try {
+                    const { data: marksData, error: marksError } = await supabase
+                        .from('student_marks_detailed')
+                        .select('*')
+                        .eq('approval_status', 'Pending')
+                        .order('created_at', { ascending: false });
+
+                    if (!marksError && marksData) {
+                        // Group by class, subject, exam
+                        const grouped = {};
+                        marksData.forEach(mark => {
+                            const key = `${mark.class_id}_${mark.subject_id}_${mark.exam_name}`;
+                            if (!grouped[key]) {
+                                grouped[key] = {
+                                    class_name: mark.class_name,
+                                    subject_name: mark.subject_name,
+                                    exam_name: mark.exam_name,
+                                    teacher_name: mark.entered_by_teacher,
+                                    created_at: mark.created_at,
+                                    count: 0
+                                };
+                            }
+                            grouped[key].count++;
+                        });
+
+                        Object.values(grouped).forEach(submission => {
+                            notifications.push({
+                                id: `marks-${submission.class_name}-${submission.subject_name}-${submission.exam_name}`,
+                                type: 'marks',
+                                icon: '📝',
+                                title: 'New Marks Submission',
+                                content: `${submission.teacher_name} submitted marks for ${submission.class_name} - ${submission.subject_name} (${submission.exam_name})`,
+                                detail: `${submission.count} students`,
+                                time: new Date(submission.created_at),
+                                unread: true,
+                                link: `support-tickets.html?tab=marks`,
+                                priority: 'normal'
+                            });
+                        });
+                    }
+                } catch (marksError) {
+                    console.log('Error loading marks submissions:', marksError);
+                }
+
                 // TODO: Add more notification types for admin
-                // - New marks submissions pending approval
                 // - Student registration approvals
                 // - System errors or alerts
                 // - Teacher requests for changes
@@ -345,6 +389,11 @@
                 setInterval(loadNotifications, 30000);
             }
         });
+
+        // Expose functions to global scope for onclick handlers
+        window.filterNotifications = filterNotifications;
+        window.markAllAsRead = markAllAsRead;
+        
         })(); // End of IIFE
     </script>
 </body>

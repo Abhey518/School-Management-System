@@ -568,6 +568,15 @@
                 console.error('Error during initialization:', error);
             }
         });
+
+        // Expose functions to global scope for onclick handlers
+        window.switchTab = switchTab;
+        window.viewSubmissionDetails = viewSubmissionDetails;
+        window.approveSubmission = approveSubmission;
+        window.openRecheckReasonModal = openRecheckReasonModal;
+        window.closeViewDetailsModal = closeViewDetailsModal;
+        window.closeRecheckReasonModal = closeRecheckReasonModal;
+        
         })(); // End of IIFE
     </script>
 </body>
