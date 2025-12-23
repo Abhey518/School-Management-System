@@ -5,6 +5,7 @@ A modern, web-based School Management System built with vanilla JavaScript and S
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)
 ![Supabase](https://img.shields.io/badge/Backend-Supabase-green.svg)
+![Status](https://img.shields.io/badge/Status-Academic%20Project-orange.svg)
 
 ## 🌟 Overview
 
@@ -101,7 +102,7 @@ School-Management-System/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/School-Management-System.git
+   git clone https://github.com/Abhey518/School-Management-System.git
    cd School-Management-System
    ```
 
