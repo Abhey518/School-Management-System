@@ -5,3 +5,8 @@ npm-debug.log
 *.log
 .vscode/
 .idea/
+shared/supabase.config.js
+PROGRESS_TRACKER.md
+TODO.md
+School-Management-System-Documentation/
+

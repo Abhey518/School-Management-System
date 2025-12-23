@@ -1,8 +1,9 @@
 // Supabase Client Configuration
-// Replace these values with your actual Supabase project credentials
+// Credentials are loaded from supabase.config.js (not committed to Git)
+// See supabase.config.example.js for setup instructions
 
-const SUPABASE_URL = 'https://dlzdovrnoztajxgexyxk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsemRvdnJub3p0YWp4Z2V4eXhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNDY4NDgsImV4cCI6MjA3OTgyMjg0OH0.sLfuQ7qEjho6klVnG-5tMzBTzk9wDsGdBvjleGshcWg';
+// This will be loaded from supabase.config.js via script tag in HTML
+// Make sure to include: <script src="shared/supabase.config.js"></script> before this file
 
 // Check if Supabase library is loaded
 if (typeof window !== 'undefined' && !window.supabase) {

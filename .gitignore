@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Environment variables and credentials
+.env
+.env.local
+shared/supabase.config.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*

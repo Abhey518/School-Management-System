@@ -1,296 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>School Management System - Login</title>
-    <link rel="stylesheet" href="shared/styles.css">
+    <link rel="stylesheet" href="shared/styles.css" />
     <script src="shared/theme.js"></script>
     <script src="shared/notifications.js"></script>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .login-container {
+        max-width: 420px;
+        width: 100%;
+        padding: 40px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      }
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .login-header h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 28px;
+      }
+      .login-header p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+      }
+      .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      .login-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      }
+      .login-btn:active {
+        transform: translateY(0);
+      }
+      .login-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: none;
+      }
+      .error-message.show {
+        display: block;
+      }
+      .forgot-password {
+        text-align: center;
+        margin-top: 15px;
+      }
+      .forgot-password a {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .forgot-password a:hover {
+        text-decoration: underline;
+      }
+      .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-right: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-        .login-container {
-            max-width: 420px;
-            width: 100%;
-            padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-header h1 {
-            margin: 0 0 10px 0;
-            color: #333;
-            font-size: 28px;
-        }
-        .login-header p {
-            margin: 0;
-            color: #666;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 14px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        .login-btn:active {
-            transform: translateY(0);
-        }
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-        .error-message.show {
-            display: block;
-        }
-        .forgot-password {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .forgot-password a {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .forgot-password a:hover {
-            text-decoration: underline;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="login-container">
-        <div class="login-header">
-            <h1>🏫 School Management System</h1>
-            <p>Sign in to access your account</p>
+      <div class="login-header">
+        <h1>🏫 School Management System</h1>
+        <p>Sign in to access your account</p>
+      </div>
+
+      <div id="errorMessage" class="error-message"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            required
+            autocomplete="email"
+          />
         </div>
 
-        <div id="errorMessage" class="error-message"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required autocomplete="email">
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
-            </div>
-
-            <button type="submit" class="login-btn" id="loginBtn">
-                Sign In
-            </button>
-        </form>
-
-        <div class="forgot-password">
-            <a href="#" onclick="forgotPassword(event)">Forgot your password?</a>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+            autocomplete="current-password"
+          />
         </div>
+
+        <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
+      </form>
+
+      <div class="forgot-password">
+        <a href="#" onclick="forgotPassword(event)">Forgot your password?</a>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="shared/supabase.config.js"></script>
     <script src="shared/supabase.js"></script>
     <script>
-        (function() {
-            // Get Supabase client
-            const supabase = getSupabaseClient();
-            
-            // Clear any stale localStorage data first
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('teacherId');
-            
-            // Check if user is already logged in
-            async function checkExistingSession() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                
-                if (session && session.user) {
-                    await redirectToDashboard(session.user);
-                }
-            } catch (error) {
-                console.error('Session check error:', error);
-                // Clear session if there's an error
-                await supabase.auth.signOut();
+      (function () {
+        // Get Supabase client
+        const supabase = getSupabaseClient();
+
+        // Clear any stale localStorage data first
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("teacherId");
+
+        // Check if user is already logged in
+        async function checkExistingSession() {
+          try {
+            const {
+              data: { session },
+              error,
+            } = await supabase.auth.getSession();
+            if (error) throw error;
+
+            if (session && session.user) {
+              await redirectToDashboard(session.user);
             }
+          } catch (error) {
+            console.error("Session check error:", error);
+            // Clear session if there's an error
+            await supabase.auth.signOut();
+          }
         }
 
         // Login form submission
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document
+          .getElementById("loginForm")
+          .addEventListener("submit", async (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const errorMsg = document.getElementById('errorMessage');
-            
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const loginBtn = document.getElementById("loginBtn");
+            const errorMsg = document.getElementById("errorMessage");
+
             // Disable button and show loading
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
-            errorMsg.classList.remove('show');
-            
+            loginBtn.innerHTML =
+              '<span class="loading-spinner"></span>Signing in...';
+            errorMsg.classList.remove("show");
+
             try {
-                // Sign in with Supabase Auth
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-                
-                if (error) throw error;
-                
-                // Get user role from user_roles table
-                await redirectToDashboard(data.user);
-                
+              // Sign in with Supabase Auth
+              const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+              });
+
+              if (error) throw error;
+
+              // Get user role from user_roles table
+              await redirectToDashboard(data.user);
             } catch (error) {
-                console.error('Login error:', error);
-                errorMsg.textContent = error.message || 'Invalid email or password. Please try again.';
-                errorMsg.classList.add('show');
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = 'Sign In';
+              console.error("Login error:", error);
+              errorMsg.textContent =
+                error.message || "Invalid email or password. Please try again.";
+              errorMsg.classList.add("show");
+              loginBtn.disabled = false;
+              loginBtn.innerHTML = "Sign In";
             }
-        });
+          });
 
         // Redirect to appropriate dashboard based on role
         async function redirectToDashboard(user) {
-            try {
-                // Get user role
-                const { data: userRole, error } = await supabase
-                    .from('user_roles')
-                    .select('role, teacher_id')
-                    .eq('user_id', user.id)
-                    .single();
-                
-                if (error) throw error;
-                
-                if (!userRole) {
-                    throw new Error('User role not found. Please contact administrator.');
-                }
-                
-                // Store user info in localStorage
-                localStorage.setItem('userId', user.id);
-                localStorage.setItem('userEmail', user.email);
-                localStorage.setItem('userRole', userRole.role);
-                
-                if (userRole.role === 'teacher' && userRole.teacher_id) {
-                    localStorage.setItem('teacherId', userRole.teacher_id);
-                }
-                
-                // Redirect based on role
-                if (userRole.role === 'admin') {
-                    window.location.href = 'admin/dashboard.html';
-                } else if (userRole.role === 'teacher') {
-                    window.location.href = 'teacher/dashboard.html';
-                } else {
-                    throw new Error('Invalid user role');
-                }
-                
-            } catch (error) {
-                console.error('Redirect error:', error);
-                const errorMsg = document.getElementById('errorMessage');
-                errorMsg.textContent = error.message;
-                errorMsg.classList.add('show');
-                
-                // Re-enable login button
-                const loginBtn = document.getElementById('loginBtn');
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = 'Sign In';
-                
-                // Sign out if there's an error
-                await supabase.auth.signOut();
+          try {
+            // Get user role
+            const { data: userRole, error } = await supabase
+              .from("user_roles")
+              .select("role, teacher_id")
+              .eq("user_id", user.id)
+              .single();
+
+            if (error) throw error;
+
+            if (!userRole) {
+              throw new Error(
+                "User role not found. Please contact administrator."
+              );
             }
+
+            // Store user info in localStorage
+            localStorage.setItem("userId", user.id);
+            localStorage.setItem("userEmail", user.email);
+            localStorage.setItem("userRole", userRole.role);
+
+            if (userRole.role === "teacher" && userRole.teacher_id) {
+              localStorage.setItem("teacherId", userRole.teacher_id);
+            }
+
+            // Redirect based on role
+            if (userRole.role === "admin") {
+              window.location.href = "admin/dashboard.html";
+            } else if (userRole.role === "teacher") {
+              window.location.href = "teacher/dashboard.html";
+            } else {
+              throw new Error("Invalid user role");
+            }
+          } catch (error) {
+            console.error("Redirect error:", error);
+            const errorMsg = document.getElementById("errorMessage");
+            errorMsg.textContent = error.message;
+            errorMsg.classList.add("show");
+
+            // Re-enable login button
+            const loginBtn = document.getElementById("loginBtn");
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = "Sign In";
+
+            // Sign out if there's an error
+            await supabase.auth.signOut();
+          }
         }
 
         // Forgot password functionality
         async function forgotPassword(event) {
-            event.preventDefault();
-            
-            const email = prompt('Please enter your email address:');
-            if (!email) return;
-            
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + '/reset-password.html'
-                });
-                
-                if (error) throw error;
-                
-                showToast('Password reset link has been sent to your email. Please check your inbox.', 'success');
-            } catch (error) {
-                console.error('Password reset error:', error);
-                showToast('Error sending password reset email: ' + error.message, 'error');
-            }
+          event.preventDefault();
+
+          const email = prompt("Please enter your email address:");
+          if (!email) return;
+
+          try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: window.location.origin + "/reset-password.html",
+            });
+
+            if (error) throw error;
+
+            showToast(
+              "Password reset link has been sent to your email. Please check your inbox.",
+              "success"
+            );
+          } catch (error) {
+            console.error("Password reset error:", error);
+            showToast(
+              "Error sending password reset email: " + error.message,
+              "error"
+            );
+          }
         }
 
         // Check for existing session on page load
-        window.addEventListener('DOMContentLoaded', checkExistingSession);
-        })(); // End of IIFE
+        window.addEventListener("DOMContentLoaded", checkExistingSession);
+      })(); // End of IIFE
     </script>
-</body>
+  </body>
 </html>

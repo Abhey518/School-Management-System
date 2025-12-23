@@ -1,121 +1,102 @@
-# 🏫 School Management System (SMS)
+# 🏫 School Management System
 
-A simple, modern, and functional School Management System built with HTML, CSS, JavaScript, and Supabase. This system provides separate portals for Administrators and Teachers to manage students, classes, attendance, and marks efficiently.
+A modern, web-based School Management System built with vanilla JavaScript and Supabase. This system provides comprehensive portals for administrators and teachers to efficiently manage students, classes, attendance, marks, and academic operations.
 
-## 📋 Table of Contents
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)
+![Supabase](https://img.shields.io/badge/Backend-Supabase-green.svg)
 
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Supabase Configuration](#supabase-configuration)
-- [Running with Docker](#running-with-docker)
-- [Usage](#usage)
-- [Database Schema](#database-schema)
-- [Screenshots](#screenshots)
-- [Future Enhancements](#future-enhancements)
-- [Contributing](#contributing)
-- [License](#license)
+## 🌟 Overview
 
-## ✨ Features
+The School Management System is a lightweight, full-featured web application designed to streamline school administration and teaching operations. Built without heavy frameworks, it leverages modern JavaScript and Supabase's powerful backend-as-a-service platform to deliver a responsive and intuitive user experience.
 
-### Administrator Portal
+## ✨ Key Features
 
-- 📊 **Dashboard** - View statistics (total students, teachers, classes, attendance rate)
-- 👨‍🎓 **Student Management** - Add, edit, delete, and view student records
-- 👨‍🏫 **Teacher Management** - Manage teacher information and assignments
-- 🏛️ **Class Management** - Create classes and assign teachers
-- 📅 **Timetable View** - View and manage school timetable
+### 👨‍💼 Administrator Portal
 
-### Teacher Portal
+- **Dashboard Analytics** - Real-time statistics on students, teachers, classes, and attendance rates
+- **Student Management** - Complete CRUD operations for student records
+- **Teacher Management** - Manage teacher profiles and subject assignments
+- **Class Management** - Create and organize classes with teacher assignments
+- **Subject Management** - Define subjects and assign them to classes
+- **Marks Approval System** - Review and approve marks submitted by teachers
+- **Timetable Management** - View and manage school-wide timetables
+- **System Settings** - Customize school name, theme colors, and system preferences
+- **Notifications** - Real-time notification system for marks submissions and requests
 
-- 📊 **Dashboard** - Quick overview of classes and daily schedule
-- ✅ **Attendance Management** - Mark daily attendance for students by class
-- 📝 **Marks Entry** - Enter and view exam marks for students
-- 📅 **Timetable View** - View personal teaching schedule
-- ✔️ **Period Completion** - Mark periods as completed
+### 👨‍🏫 Teacher Portal
+
+- **Personal Dashboard** - Overview of assigned classes and daily schedule
+- **Attendance Tracking** - Mark and manage daily student attendance
+- **Marks Entry** - Submit student marks for various subjects and exams
+- **Marks Recheck** - Handle recheck requests from administrators
+- **Timetable View** - Access personal teaching schedule
+- **Period Management** - Mark teaching periods as completed
+- **Account Settings** - Manage personal profile and preferences
+- **Notifications** - Receive updates on recheck requests and system announcements
+
+### 🔐 Authentication & Security
+
+- Secure user authentication via Supabase Auth
+- Role-based access control (Admin/Teacher)
+- Protected routes and API endpoints
+- Secure credential management (credentials not stored in repository)
 
 ## 🛠️ Technology Stack
 
-- **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-- **Backend:** Supabase (PostgreSQL + REST API)
-- **Containerization:** Docker & Docker Compose
-- **HTTP Server:** http-server (Node.js)
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Backend:** Supabase (PostgreSQL + REST API + Auth)
+- **Deployment:** Docker support included
+- **Server:** http-server (Node.js)
 
-**No backend frameworks** like PHP, Python, or Node.js servers are required - only JavaScript + Supabase!
+**Why Vanilla JavaScript?** This project demonstrates that powerful web applications can be built without heavy frameworks, keeping the codebase lightweight, fast, and easy to understand.
 
 ## 📁 Project Structure
 
 ```
 School-Management-System/
-├── index.html                 # Main login/portal selection page
-├── admin/                     # Administrator portal
-│   ├── dashboard.html        # Admin dashboard
-│   ├── students.html         # Student management
-│   ├── teachers.html         # Teacher management
-│   ├── classes.html          # Class management
-│   ├── timetable.html        # Timetable view
-│   ├── admin.js              # Admin-specific JavaScript
-│   └── admin.css             # Admin-specific styles
-├── teacher/                   # Teacher portal
-│   ├── dashboard.html        # Teacher dashboard
-│   ├── attendance.html       # Attendance marking
-│   ├── marks.html            # Marks entry
-│   ├── timetable.html        # Teacher timetable
-│   ├── teacher.js            # Teacher-specific JavaScript
-│   └── teacher.css           # Teacher-specific styles
-├── shared/                    # Shared resources
-│   ├── supabase.js           # Supabase client configuration
-│   ├── api.js                # Reusable API functions
-│   └── styles.css            # Shared CSS styles
-├── schema.sql                # Database schema for Supabase
-├── Dockerfile                # Docker configuration
-├── docker-compose.yml        # Docker Compose configuration
-├── .dockerignore             # Docker ignore file
-└── README.md                 # This file
+├── index.html                      # Login page
+├── README.md                       # Project documentation
+├── schema.sql                      # Database schema
+├── admin/                          # Administrator portal
+│   ├── dashboard.html             # Admin dashboard
+│   ├── students.html              # Student management
+│   ├── teachers.html              # Teacher management
+│   ├── classes.html               # Class management
+│   ├── subjects.html              # Subject management
+│   ├── marks-approval.html        # Marks approval system
+│   ├── timetable.html             # Timetable view
+│   ├── settings.html              # System settings
+│   └── notifications.html         # Notifications
+├── teacher/                        # Teacher portal
+│   ├── dashboard.html             # Teacher dashboard
+│   ├── attendance.html            # Attendance marking
+│   ├── marks.html                 # Marks entry
+│   ├── timetable.html             # Personal timetable
+│   ├── notifications.html         # Notifications
+│   └── account-settings.html      # Account settings
+├── shared/                         # Shared resources
+│   ├── supabase.js                # Supabase client
+│   ├── supabase.config.example.js # Config template
+│   ├── api.js                     # API utilities
+│   ├── theme.js                   # Theme management
+│   ├── notifications.js           # Notification system
+│   └── styles.css                 # Global styles
+├── Dockerfile                      # Docker configuration
+├── docker-compose.yml             # Docker Compose setup
+└── .gitignore                     # Git ignore rules
 ```
 
-## 📋 Prerequisites
+## 🚀 Quick Start
 
-Before you begin, ensure you have the following installed:
+### Prerequisites
 
 - **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **Docker** (optional, for containerized deployment) - [Download](https://www.docker.com/)
 - **Supabase Account** - [Sign up](https://supabase.com/)
-- **Modern Web Browser** (Chrome, Firefox, Edge, Safari)
+- **Git** - [Download](https://git-scm.com/)
+- Modern web browser (Chrome, Firefox, Edge, Safari)
 
-## 🚀 Installation & Setup
-
-### Option 1: Local Setup (Without Docker)
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/yourusername/School-Management-System.git
-   cd School-Management-System
-   ```
-
-2. **Install http-server globally**
-
-   ```bash
-   npm install -g http-server
-   ```
-
-3. **Configure Supabase** (see [Supabase Configuration](#supabase-configuration) below)
-
-4. **Start the server**
-
-   ```bash
-   http-server -p 8080 -c-1
-   ```
-
-5. **Open your browser**
-   ```
-   http://localhost:8080
-   ```
-
-### Option 2: Docker Setup (Recommended)
+### Installation
 
 1. **Clone the repository**
 
@@ -124,245 +105,141 @@ Before you begin, ensure you have the following installed:
    cd School-Management-System
    ```
 
-2. **Configure Supabase** (see [Supabase Configuration](#supabase-configuration) below)
+2. **Set up Supabase**
 
-3. **Build and run with Docker Compose**
+   - Create a new project on [Supabase](https://supabase.com/)
+   - Go to **Settings** → **API** and copy:
+     - Project URL
+     - Anon/Public Key
+   - Go to **SQL Editor** and run the `schema.sql` file to set up the database
 
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **Access the application**
-
-   ```
-   http://localhost:8080
-   ```
-
-5. **View logs (optional)**
+3. **Configure credentials**
 
    ```bash
-   docker-compose logs -f
+   # Copy the example config file
+   cp shared/supabase.config.example.js shared/supabase.config.js
    ```
 
-6. **Stop the application**
-   ```bash
-   docker-compose down
-   ```
+   Edit `shared/supabase.config.js` and add your Supabase credentials:
 
-## 🔧 Supabase Configuration
-
-### Step 1: Create a Supabase Project
-
-1. Go to [Supabase](https://supabase.com/) and create an account
-2. Click "New Project"
-3. Fill in project details:
-   - **Name:** School Management System
-   - **Database Password:** Choose a strong password
-   - **Region:** Select closest to your location
-4. Wait for the project to be created (~2 minutes)
-
-### Step 2: Get Your API Credentials
-
-1. In your Supabase project dashboard, go to **Settings** → **API**
-2. Copy the following:
-   - **Project URL** (e.g., `https://xxxxx.supabase.co`)
-   - **anon/public key** (starts with `eyJ...`)
-
-### Step 3: Update Configuration
-
-1. Open `shared/supabase.js`
-2. Replace the placeholders with your credentials:
    ```javascript
    const SUPABASE_URL = "https://your-project.supabase.co";
    const SUPABASE_ANON_KEY = "your-anon-key-here";
    ```
 
-### Step 4: Set Up Database
+   **⚠️ Important:** Never commit `supabase.config.js` to Git (it's already in `.gitignore`)
 
-1. In Supabase dashboard, go to **SQL Editor**
-2. Open the `schema.sql` file from this project
-3. Copy the entire content and paste it into the SQL Editor
-4. Click **Run** to execute the schema
-5. Verify tables are created under **Table Editor**
+4. **Install and run**
 
-### Step 5: Add Supabase Library
+   ```bash
+   # Install http-server globally
+   npm install -g http-server
 
-The Supabase JavaScript library is loaded via CDN. Add this line to each HTML file before the closing `</body>` tag:
+   # Start the development server
+   http-server -p 8080 -c-1
+   ```
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-```
+5. **Access the application**
 
-## 🐳 Running with Docker
+   Open your browser and navigate to:
 
-### Build the Docker Image
+   ```
+   http://localhost:8080
+   ```
 
-```bash
-docker build -t school-management-system .
-```
-
-### Run the Container
+### Docker Deployment (Optional)
 
 ```bash
-docker run -d -p 8080:8080 --name sms-app school-management-system
-```
-
-### Using Docker Compose (Preferred)
-
-```bash
-# Start the application
+# Build and run with Docker Compose
 docker-compose up -d
 
+# Access at http://localhost:8080
+
 # View logs
-docker-compose logs -f sms-web
+docker-compose logs -f
 
 # Stop the application
 docker-compose down
-
-# Rebuild after changes
-docker-compose up -d --build
 ```
 
-### Docker Commands Reference
+## 📖 Usage Guide
 
-```bash
-# List running containers
-docker ps
+### First-Time Setup
 
-# Stop container
-docker stop school-management-system
-
-# Remove container
-docker rm school-management-system
-
-# View container logs
-docker logs school-management-system
-
-# Access container shell
-docker exec -it school-management-system sh
-```
-
-## 📖 Usage
+1. After running the `schema.sql` file in Supabase, you'll need to create admin and teacher users
+2. Use Supabase Authentication to create user accounts
+3. Add corresponding entries in the `user_roles` table to assign roles
+4. Teachers must be added to the `teachers` table with their user_id
 
 ### For Administrators
 
-1. **Access Admin Portal:** Click "Administrator Portal" on the home page
-2. **Dashboard:** View overall statistics and quick actions
-3. **Manage Students:** Add new students, edit details, or remove students
-4. **Manage Teachers:** Add teachers with subject assignments
-5. **Create Classes:** Set up classes and assign class teachers
-6. **View Timetable:** Check the school-wide timetable
+1. **Login** - Access the admin portal with admin credentials
+2. **Manage Students** - Add, edit, or remove student records
+3. **Manage Teachers** - Create teacher profiles and assign subjects
+4. **Create Classes** - Set up classes and assign class teachers
+5. **Approve Marks** - Review marks submitted by teachers
+6. **Customize Settings** - Configure school name and theme colors
 
 ### For Teachers
 
-1. **Access Teacher Portal:** Click "Teacher Portal" on the home page
-2. **Dashboard:** View your classes and today's schedule
-3. **Mark Attendance:**
-   - Select class and date
-   - Mark each student as Present/Absent
-   - Submit attendance
-4. **Enter Marks:**
-   - Select class, subject, and exam
-   - Enter marks for each student (0-100)
-   - Submit marks
-5. **View Timetable:** Check your teaching schedule and mark periods as completed
+1. **Login** - Access the teacher portal with teacher credentials
+2. **Mark Attendance** - Select class and date, mark students present/absent
+3. **Enter Marks** - Submit marks for students in your subjects
+4. **View Schedule** - Check your teaching timetable
+5. **Handle Rechecks** - Respond to mark recheck requests from admin
 
-### Keyboard Shortcuts (Teacher Portal)
+## 🎨 Features Highlight
 
-- **Ctrl + P:** Mark all students present
-- **Ctrl + A:** Mark all students absent
+### Dynamic Theming
 
-## 🗄️ Database Schema
+- Customizable school name and brand colors
+- Theme settings persist across sessions
+- Applies to both admin and teacher portals
 
-### Tables
+### Real-time Notifications
 
-1. **students**
+- Instant notifications for marks submissions
+- Recheck request alerts
+- Notification badge indicators
 
-   - `id` (UUID, Primary Key)
-   - `name` (Text)
-   - `class` (Text)
-   - `admission_no` (Text, Unique)
-   - `created_at` (Timestamp)
+### Responsive Design
 
-2. **teachers**
+- Mobile-friendly interface
+- Adaptive layouts for different screen sizes
+- Touch-optimized controls
 
-   - `id` (UUID, Primary Key)
-   - `name` (Text)
-   - `subject` (Text)
-   - `email` (Text, Unique)
-   - `created_at` (Timestamp)
+### Data Validation
 
-3. **classes**
+- Form validation for all inputs
+- Marks range validation (0-100)
+- Duplicate entry prevention
 
-   - `id` (UUID, Primary Key)
-   - `name` (Text, Unique)
-   - `teacher_id` (UUID, Foreign Key → teachers)
+## 🔒 Security Features
 
-4. **attendance**
+- **Credential Protection** - Supabase credentials stored in gitignored config file
+- **Authentication** - Secure login via Supabase Auth
+- **Role-based Access** - Separate portals for admin and teacher roles
+- **Row Level Security** - Database-level security policies (configured in Supabase)
 
-   - `id` (UUID, Primary Key)
-   - `student_id` (UUID, Foreign Key → students)
-   - `date` (Date)
-   - `status` (Boolean)
-   - `marked_by` (UUID, Foreign Key → teachers)
-   - `created_at` (Timestamp)
+## 📊 Database Schema
 
-5. **marks**
-   - `id` (UUID, Primary Key)
-   - `student_id` (UUID, Foreign Key → students)
-   - `subject` (Text)
-   - `exam` (Text)
-   - `marks` (Integer, 0-100)
-   - `entered_by` (UUID, Foreign Key → teachers)
-   - `created_at` (Timestamp)
+The system uses a PostgreSQL database (via Supabase) with the following main tables:
 
-### Views
+- `students` - Student information and records
+- `teachers` - Teacher profiles and assignments
+- `classes` - Class definitions and teacher assignments
+- `subjects` - Subject catalog
+- `attendance` - Daily attendance records
+- `marks` - Student marks and grades
+- `user_roles` - User authentication and role mapping
+- `notifications` - System notifications
+- `system_settings` - Application configuration
 
-- `student_attendance_summary` - Attendance percentage for each student
-- `student_marks_summary` - Marks with grades for all students
-- `class_performance` - Average, highest, and lowest marks by class
-
-### Functions
-
-- `calculate_attendance_percentage(student_id, start_date, end_date)`
-- `get_student_average(student_id, exam)`
-
-## 📸 Screenshots
-
-> **Note:** Add screenshots of your application here
-
-### Admin Portal
-
-- Dashboard with statistics
-- Student management interface
-- Teacher management interface
-- Class management interface
-
-### Teacher Portal
-
-- Teacher dashboard
-- Attendance marking interface
-- Marks entry interface
-- Timetable view
-
-## 🔮 Future Enhancements
-
-- [ ] User authentication and authorization
-- [ ] Parent portal for viewing student progress
-- [ ] Real-time notifications
-- [ ] Report card generation (PDF export)
-- [ ] SMS/Email notifications for attendance
-- [ ] Dynamic timetable management
-- [ ] Fee management module
-- [ ] Library management
-- [ ] Student profile with photos
-- [ ] Advanced analytics and charts
-- [ ] Mobile responsive design improvements
-- [ ] Progressive Web App (PWA) support
+For detailed schema, see `schema.sql`
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+Contributions are welcome! Here's how you can help:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
@@ -370,23 +247,46 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+## 🎓 Academic Project
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project was developed as part of the **SWST 31032 - Applied Information Systems** course.
 
-## 👥 Authors
+**Purpose:** Educational demonstration of web-based school management system development using modern web technologies and cloud services.
 
-- **H. H. Arunoda Abeywardhana** - Initial work
+**Note:** While this is an academic project, it is open-sourced under the MIT License to help other students and developers learn. See the [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**H. H. Arunoda Abeywardhana**
+
+- Email: arunodaabey2001@gmail.com
+- GitHub: [Abhey518](https://github.com/Abhey518)
 
 ## 🙏 Acknowledgments
 
-- Supabase for providing an excellent backend platform
-- All contributors and testers
+- [Supabase](https://supabase.com/) - For providing an excellent backend platform
+- All contributors and testers who helped improve this project
 
 ## 📞 Support
 
-For support, email arunodaabey2001@gmail.com or create an issue in the repository.
+If you encounter any issues or have questions:
+
+- Create an [issue](https://github.com/Abhey518/School-Management-System/issues)
+- Email: arunodaabey2001@gmail.com
+
+## 🗺️ Roadmap
+
+- [ ] Parent portal for viewing student progress
+- [ ] Report card generation (PDF export)
+- [ ] SMS/Email notifications
+- [ ] Fee management module
+- [ ] Library management system
+- [ ] Advanced analytics and charts
+- [ ] Progressive Web App (PWA) support
+- [ ] Multi-language support
 
 ---
 
 **Made with ❤️ for educational purposes**
+
+_This project was developed as part of the SWST 31032 - Applied Information Systems course_
