@@ -86,9 +86,9 @@ Built without heavy frameworks, it leverages modern vanilla JavaScript and Supab
 #### 2.2 Configure Local Config File
 
 1. Open your terminal and navigate to the project directory:
-   ```bash
+```bash
    cd School-Management-System
-   ```
+```
 
 2. Copy the configuration template:
 ```bash
