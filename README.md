@@ -93,17 +93,17 @@ Built without heavy frameworks, it leverages modern vanilla JavaScript and Supab
 2. Copy the configuration template:
 ```bash
 # Windows PowerShell / CMD:
-copy shared\supabase.config.example.js shared\supabase.config.js
+	copy shared\supabase.config.example.js shared\supabase.config.js
 
 # Linux / macOS:
-cp shared/supabase.config.example.js shared/supabase.config.js
+	cp shared/supabase.config.example.js shared/supabase.config.js
 ```
 
 3. Open `shared/supabase.config.js` in your code editor and replace the placeholder values with your Supabase credentials:
 ```javascript
-const SUPABASE_URL = "https://your-supabase-project.supabase.co";
+	const SUPABASE_URL = "https://your-supabase-project.supabase.co";
 
-const SUPABASE_ANON_KEY = "your-supabase-anon-key-here";
+	const SUPABASE_ANON_KEY = "your-supabase-anon-key-here";
 ```
 
 ⚠️ **Security Warning**: Never commit `shared/supabase.config.js` to GitHub. The file is already ignored in the project's `.gitignore` to prevent leaking database keys.
